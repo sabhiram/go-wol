@@ -11,7 +11,7 @@ func TestGetMacBytes(test *testing.T) {
         expected MacAddress
     } {
         { "00:00:00:00:00:00",   MacAddress{0,0,0,0,0,0} },
-        { "00:00:00:00:00:00",   MacAddress{0,0,0,0,0,0} },
+        { "00:ff:01:03:00:00",   MacAddress{0,255,1,3,0,0} },
     }
 
     for _, t := range PositiveTestCases {
@@ -41,11 +41,17 @@ func TestNewMagicPacket(test *testing.T) {
         expected MacAddress
     } {
         { "00:00:00:00:00:00",   MacAddress{0,0,0,0,0,0} },
-        { "00:00:00:00:00:00",   MacAddress{0,0,0,0,0,0} },
+        { "00:ff:01:03:00:00",   MacAddress{0,255,1,3,0,0} },
     }
 
     for _, t := range PositiveTestCases {
-        _, err := NewMagicPacket(t.mac)
+        pkt, err := NewMagicPacket(t.mac)
+        for _, v := range pkt.header {
+            assert.Equal(test, v, 255)
+        }
+        for _, mac := range pkt.payload {
+            assert.Equal(test, t.expected, mac)
+        }
         assert.Equal(test, err, nil)
     }
 }
