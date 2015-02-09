@@ -1,5 +1,7 @@
 # go-wol
 
+[![Build Status](https://travis-ci.org/sabhiram/go-wol.svg?branch=master)](https://travis-ci.org/sabhiram/go-wol)
+
 Simple wake on LAN magic packet generator for golang
 
 ## WOL in the world?
