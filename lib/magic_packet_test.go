@@ -49,3 +49,17 @@ func TestNewMagicPacket(test *testing.T) {
         assert.Equal(test, err, nil)
     }
 }
+
+func TestNewMagicPacketNegative(test *testing.T) {
+    var NegativeTestCases = []struct {
+        mac   string
+    } {
+        { "00x00:00:00:00:00" },
+        { "00:00:Z0:00:00:00" },
+    }
+
+    for _, t := range NegativeTestCases {
+        _, err := NewMagicPacket(t.mac)
+        assert.NotEqual(test, err, nil)
+    }
+}
