@@ -14,8 +14,6 @@ The listening interface just looks for a `Magic Packet` with it's MAC address en
 
 It is important to remember that since this is typically sent over the [data link layer](http://en.wikipedia.org/wiki/Data_link_layer), the target machine's IP address is irrelevant.
 
-This `Go` application tries to make it easier to send WOL packets over your LAN, by attempting to figure out the destination MAC address of a given hostname / ip address (when the target machine is up). It then remembers the MAC address for future sake.
-
 ## Installation
 
 ```

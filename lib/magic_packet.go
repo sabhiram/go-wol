@@ -7,17 +7,23 @@ import (
     "encoding/hex"
 )
 
+// Define globals for the MagicPacket and the MacAddress parsing
+var (
+    delims = ":-"
+    re_MAC = regexp.MustCompile(`^([0-9a-fA-F]{2}[` + delims + `]){5}([0-9a-fA-F]{2})$`)
+)
+
+// A MacAddress is 6 bytes in a row
 type MacAddress [6]byte
 
+// A MagicPacket is constituted of 6 bytes of 0xFF followed by
+// 16 groups of the destination MAC address.
 type MagicPacket struct {
     header  [6]byte
     payload [16]MacAddress
 }
 
-var delims = ":-"
-var re_MAC = regexp.MustCompile(`^([0-9a-fA-F]{2}[` + delims + `]){5}([0-9a-fA-F]{2})$`)
-
-/* Returns a MacAddress object given a mac address string */
+// Returns a MacAddress object given a mac address string
 func GetMacBytes(mac string) (*MacAddress, error) {
     // Parse MAC addr
     for _, delim := range delims {
@@ -37,11 +43,11 @@ func GetMacBytes(mac string) (*MacAddress, error) {
     return &ret, nil
 }
 
-/* Constructs a "Magic Packet" broadcast frame which contains 6 bytes of
-   0xff followed by 16 repetitions of a given mac address.
-
-   This function accepts a mac address string, and returns a pointer to
-   a MagicPacket object */
+// Constructs a "Magic Packet" broadcast frame which contains 6 bytes of
+// 0xff followed by 16 repetitions of a given mac address.
+//
+// This function accepts a mac address string, and returns a pointer to
+// a MagicPacket object */
 func NewMagicPacket(mac string) (*MagicPacket, error) {
     var packet  MagicPacket
 
