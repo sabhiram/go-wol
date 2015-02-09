@@ -34,3 +34,18 @@ func TestGetMacBytesNegative(test *testing.T) {
         assert.NotEqual(test, err, nil)
     }
 }
+
+func TestNewMagicPacket(test *testing.T) {
+    var PositiveTestCases = []struct {
+        mac      string
+        expected MacAddress
+    } {
+        { "00:00:00:00:00:00",   MacAddress{0,0,0,0,0,0} },
+        { "00:00:00:00:00:00",   MacAddress{0,0,0,0,0,0} },
+    }
+
+    for _, t := range PositiveTestCases {
+        magicPkt, err := NewMagicPacket(t.mac)
+        assert.Equal(test, err, nil)
+    }
+}
