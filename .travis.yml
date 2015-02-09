@@ -8,4 +8,4 @@ env:
   - "PATH=$HOME/gopath/bin:$PATH"
 
 script:
-  - go test -v
+  - go test -v ./...
