@@ -14,8 +14,10 @@ const Version = "1.0.0"
 var ValidOptions = [] struct {
     short, long, description string
 } {
-    { `v`, `version`, `prints the application version`                    },
-    { `h`, `help`,    `prints this help menu`                             },
+    { `v`, `version`, `prints the application version`   },
+    { `h`, `help`,    `prints this help menu`            },
+    { `p`, `port`,    `udp port to send bcast packet to` },
+    { `b`, `bcast`,   `broadcast IP to send packet to`   },
 }
 
 // Usage string for wol

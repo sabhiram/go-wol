@@ -23,28 +23,34 @@ var (
     Options struct {
         Version     bool   `short:"v" long:"version"`
         Help        bool   `short:"h" long:"help"`
+        BroadcastIP string `short:"b" long:"bcast" default:"255.255.255.255"`
+        UDPPort     string `short:"p" long:"port" default:"9"`
     }
 )
 
 // Function to send a magic packet to a given mac address
 func sendMagicPacket(macAddr string) error {
-    x, err := wol.NewMagicPacket(macAddr)
+    fmt.Printf("Attempting to send a magic packet to MAC %s\n", macAddr)
+    fmt.Printf("... Broadcasting to IP: %s\n", Options.BroadcastIP)
+    fmt.Printf("... Using UDP Port:     %s\n", Options.UDPPort)
+
+    magicPacket, err := wol.NewMagicPacket(macAddr)
     if err != nil {
         fmt.Printf("Error: %s\n", err.Error())
     } else {
         // Temp code to send magic packet!
         var buf bytes.Buffer
-        binary.Write(&buf, binary.BigEndian, x)
+        binary.Write(&buf, binary.BigEndian, magicPacket)
 
-        udpAddr, err := net.ResolveUDPAddr("udp", BcastAddr + ":" + UDPPort)
+        udpAddr, err := net.ResolveUDPAddr("udp", Options.BroadcastIP + ":" + Options.UDPPort)
         if err != nil {
-            fmt.Printf("Unable to get a UDP address for %s\n", BcastAddr)
+            fmt.Printf("Unable to get a UDP address for %s\n", Options.BroadcastIP)
             return err
         }
 
         connection, err := net.DialUDP("udp", nil, udpAddr)
         if err != nil {
-            fmt.Printf("Unable to dial UDP addr for %s\n", BcastAddr)
+            fmt.Printf("Unable to dial UDP addr for %s\n", Options.BroadcastIP)
             return err
         }
         defer connection.Close()
@@ -78,6 +84,11 @@ func main() {
     // "--version" requested
     case Options.Version:
         fmt.Printf("%s\n", Version)
+
+    case len(macAddr) == 0:
+        fmt.Printf("Error: A valid mac address is not specified!\n")
+        fmt.Printf(getAppUsageString())
+        exitCode = 1
 
     // All other cases go here!
     case true:
