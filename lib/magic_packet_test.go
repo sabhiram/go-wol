@@ -47,7 +47,7 @@ func TestNewMagicPacket(test *testing.T) {
     for _, t := range PositiveTestCases {
         pkt, err := NewMagicPacket(t.mac)
         for _, v := range pkt.header {
-            assert.Equal(test, v, 255)
+            assert.Equal(test, v, 0xff)
         }
         for _, mac := range pkt.payload {
             assert.Equal(test, t.expected, mac)
