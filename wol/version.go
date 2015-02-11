@@ -4,7 +4,7 @@ package main
 
 import (
     "fmt"
-    "github.com/sabhiram/colorize"
+    "github.com/sabhiram/go-colorize"
 )
 
 // Version represents the current Semantic Version of this application
