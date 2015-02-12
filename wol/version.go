@@ -10,7 +10,17 @@ import (
 // Version represents the current Semantic Version of this application
 const Version = "1.0.0"
 
-// List of options which chloe supports
+// List of strings which contain allowed commands
+var ValidCommands = [] struct {
+    name, description string
+} {
+    { `wake`,     `wakes up a machine by mac address or alias` },
+    { `list`,     `lists all mac addresses and their aliases`  },
+    { `alias`,    `stores an alias to a mac address`           },
+    { `remove`,   `removes an alias or a mac address`          },
+}
+
+// List of options which wol supports
 var ValidOptions = [] struct {
     short, long, description string
 } {
@@ -23,25 +33,40 @@ var ValidOptions = [] struct {
 // Usage string for wol
 var UsageString = `Usage:
 
-    <cyan>wol</cyan> [<options>] [mac address]
+    To wake up a machine:
+        <cyan>wol</cyan> [<options>] <yellow>wake</yellow> <mac address | alias>
 
-Options:
+    To store an alias:
+        <cyan>wol</cyan> [<options>] <yellow>alias</yellow> <alias> <mac address>
 
+    To view aliases:
+        <cyan>wol</cyan> [<options>] <yellow>list</yellow>
+
+    To delete aliases:
+        <cyan>wol</cyan> [<options>] <yellow>remove</yellow> <mac address | alias>
+
+    The following MAC addresses are valid and will match:
+    01-23-45-56-67-89, 89:AB:CD:EF:00:12, 89:ab:cd:ef:00:12
+
+Commands:
 %s
-
-Specifying MAC addresses:
--------------------------
-The following MAC addresses are valid and will match:
-01-23-45-56-67-89, 89:AB:CD:EF:00:12, 89:ab:cd:ef:00:12
-
-The supported delimiters include ":" and "-"
-
+Options:
+%s
 Version:
-
     <white>%s</white>
 
 `
-// Returns a tuple of commands and options which we support
+
+// Build a command string from the above valid ones
+func getAllCommands() string {
+    commands := ""
+    for _, c := range ValidCommands {
+        commands += fmt.Sprintf("    <yellow>%-16s</yellow> %s\n", c.name, c.description)
+    }
+    return commands
+}
+
+// Build an option string from the above valid ones
 func getAllOptions() string {
     options := ""
     for _, o := range ValidOptions {
@@ -52,7 +77,6 @@ func getAllOptions() string {
 
 // Returns the Usage string for this application
 func getAppUsageString() string {
-    options := getAllOptions()
-    return colorize.Colorize(fmt.Sprintf(UsageString, options, Version))
+    return colorize.Colorize(fmt.Sprintf(UsageString, getAllCommands(), getAllOptions(), Version))
 }
 
