@@ -70,7 +70,6 @@ func sendMagicPacket(macAddr string) error {
 // Run one of the supported commands
 func runCommand(cmd string, args []string, aliases map[string]string) error {
     var err error
-    fmt.Printf("The aliases map is: %v\n", aliases)
     switch cmd {
 
     case "alias":
@@ -103,9 +102,16 @@ func runCommand(cmd string, args []string, aliases map[string]string) error {
 
     case "wake":
         if len(args) > 0 {
-            err = sendMagicPacket(args[0])
+            macAddr := args[0]
+
+            // If we got an alias - use that as the mac addr
+            if val, ok := aliases[macAddr]; ok {
+                macAddr = val
+            }
+
+            err = sendMagicPacket(macAddr)
             if err == nil {
-                fmt.Printf("Magic packet sent successfully to %s\n", args[0])
+                fmt.Printf("Magic packet sent successfully to %s\n", macAddr)
             }
         } else {
             err = errors.New("No mac address specified to wake command")
