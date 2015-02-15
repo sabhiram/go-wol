@@ -21,13 +21,61 @@ It is important to remember that since this is typically sent over the [data lin
 ```
 $go get github.com/sabhiram/go-wol
 $go install github.com/sabhiram/go-wol/...
-$wol 08:BA:AD:F0:00:0D
+$wol wake 08:BA:AD:F0:00:0D
 ```
 
 ## Usage
 
-TODO
+Wake up a machine with mac address `00:11:22:aa:bb:cc`
+    
+    wol wake 00:11:22:aa:bb:cc
+
+Store an alias:
+    
+    wol alias skynet 00:11:22:aa:bb:cc
+
+Wake up a machine using an alias
+
+    wol wake skynet
+
+View all aliases and corresponding MAC addresses:
+    
+    wol list
+
+To delete an alias:
+    
+    wol remove skynet
+
+To specify the Broadcast Port and IP
+
+```
+    wol wake 00:11:22:aa:bb:cc -b 255.255.255.255 -p 7
+   
+    # or
+   
+    wol wake skynet --bcast 255.255.255.255 --port 7
+```
+
+#### Defaults
+
+The default Broadcast IP is `255.255.255.255` and the UDP Port is `9`. Typically the UDP port is either `7` or `9`.
+
+#### Alias file
+
+The alias file is typically stored in the user's Home directory under the path of `~/.config/go-wol/aliases`. This is a binary `Gob` which is read from disk on each invocation of `wol`, and flushed to disk if any aliases are modified from the master list.
+
+#### This is how `wol` expects MAC addresses to look
+
+The following MAC addresses are valid and will match:
+01-23-45-56-67-89, 89:AB:CD:EF:00:12, 89:ab:cd:ef:00:12
+
+The following MAC addresses are not (yet) valid:
+1-2-3-4-5-6, 01 23 45 56 67 89
 
 ## Tests
 
-TODO
+All commits and PRs will get run on TravisCI and have corresponding coverage reports sent to Coveralls.io.
+
+To run the tests:
+
+    go test -v github.com/sabhiram/go-wol/...

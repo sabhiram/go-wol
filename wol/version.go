@@ -50,6 +50,9 @@ var UsageString = `Usage:
     The following MAC addresses are valid and will match:
     01-23-45-56-67-89, 89:AB:CD:EF:00:12, 89:ab:cd:ef:00:12
 
+    The following MAC addresses are not (yet) valid:
+    1-2-3-4-5-6, 01 23 45 56 67 89
+
 Commands:
 %s
 Options:
