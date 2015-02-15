@@ -25,6 +25,16 @@ var (
     }
 )
 
+// Helper function to dump the usage and print an error if specified,
+// it also returns the exit code requested to the function (saves me a line)
+func printUsageGetExitCode(s string, e int) int {
+    if len(s) > 0 {
+        fmt.Printf(s)
+    }
+    fmt.Printf(getAppUsageString())
+    return e
+}
+
 // Function to send a magic packet to a given mac address
 func sendMagicPacket(macAddr string) error {
     magicPacket, err := wol.NewMagicPacket(macAddr)
@@ -35,7 +45,6 @@ func sendMagicPacket(macAddr string) error {
         fmt.Printf("Attempting to send a magic packet to MAC %s\n", macAddr)
         fmt.Printf("... Broadcasting to IP: %s\n", Options.BroadcastIP)
         fmt.Printf("... Using UDP Port:     %s\n", Options.UDPPort)
-
 
         udpAddr, err := net.ResolveUDPAddr("udp", Options.BroadcastIP + ":" + Options.UDPPort)
         if err != nil {
@@ -61,7 +70,7 @@ func sendMagicPacket(macAddr string) error {
 // Run one of the supported commands
 func runCommand(cmd string, args []string, aliases map[string]string) error {
     var err error
-
+    fmt.Printf("The aliases map is: %v\n", aliases)
     switch cmd {
 
     case "alias":
@@ -79,7 +88,7 @@ func runCommand(cmd string, args []string, aliases map[string]string) error {
             fmt.Printf("No aliases found! Add one with \"wol alias <name> <mac>\"\n")
         } else {
             for alias, mac := range aliases {
-                fmt.Printf("    %s        %s\n", mac, alias)
+                fmt.Printf("    %s - %s\n", alias, mac)
             }
         }
 
@@ -109,34 +118,7 @@ func runCommand(cmd string, args []string, aliases map[string]string) error {
     return err
 }
 
-// Helper function to dump the usage and print an error if specified,
-// it also returns the exit code requested to the function (saves me a line)
-func printUsageGetExitCode(s string, e int) int {
-    if len(s) > 0 {
-        fmt.Printf(s)
-    }
-    fmt.Printf(getAppUsageString())
-    return e
-}
-
-func loadUserAliases() (map[string]string, error) {
-    var ret map[string]string
-
-    err := os.MkdirAll("~/.config/go-wol/", 0777)
-    if err != nil {
-        return ret, err
-    }
-
-    fmt.Printf("TODO: ... loading user aliases\n");
-
-    return ret, err
-}
-
-func flushUserAliases(m map[string]string) error {
-    fmt.Printf("TODO: ... flush user aliases\n");
-    return nil
-}
-
+// Main entry point for binary
 func main() {
     var args []string
 
