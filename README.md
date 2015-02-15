@@ -49,11 +49,11 @@ To delete an alias:
 To specify the Broadcast Port and IP
 
 ```
-    wol wake 00:11:22:aa:bb:cc -b 255.255.255.255 -p 7
-   
-    # or
-   
-    wol wake skynet --bcast 255.255.255.255 --port 7
+wol wake 00:11:22:aa:bb:cc -b 255.255.255.255 -p 7
+
+# or
+
+wol wake skynet --bcast 255.255.255.255 --port 7
 ```
 
 #### Defaults
@@ -67,10 +67,10 @@ The alias file is typically stored in the user's Home directory under the path o
 #### This is how `wol` expects MAC addresses to look
 
 The following MAC addresses are valid and will match:
-01-23-45-56-67-89, 89:AB:CD:EF:00:12, 89:ab:cd:ef:00:12
+`01-23-45-56-67-89`, `89:0A:CD:EF:00:12`, `89:0a:cd:ef:00:12`
 
 The following MAC addresses are not (yet) valid:
-1-2-3-4-5-6, 01 23 45 56 67 89
+`1-2-3-4-5-6`, `01 23 45 56 67 89`
 
 ## Tests
 
