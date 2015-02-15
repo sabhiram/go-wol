@@ -3,19 +3,16 @@ package main
 import (
     "os"
     "fmt"
-    "strings"
     "encoding/binary"
     "bytes"
     "net"
 
+    "errors"
+
+    "github.com/sabhiram/go-colorize"
     wol "github.com/sabhiram/go-wol/lib"
 
     "github.com/jessevdk/go-flags"
-)
-
-const (
-    UDPPort     = "9"
-    BcastAddr   = "255.255.255.255"
 )
 
 var (
@@ -63,41 +60,86 @@ func sendMagicPacket(macAddr string) error {
     return err
 }
 
+// Run one of the supported commands
+func runCommand(cmd string, args []string) error {
+    var err error
+
+    switch cmd {
+
+    case "alias":
+        fmt.Printf("%s\n", cmd)
+
+    case "list":
+        fmt.Printf("%s\n", cmd)
+
+    case "remove":
+        fmt.Printf("%s\n", cmd)
+
+    case "wake":
+        if len(args) > 0 {
+            err = sendMagicPacket(args[0])
+            if err == nil {
+                fmt.Printf("Magic packet sent successfully to %s\n", args[0])
+            }
+        } else {
+            err = errors.New("No mac address specified to wake command")
+        }
+    default:
+        panic("Invalid command passed to runCommand")
+
+    }
+    return err
+}
+
+// Helper function to dump the usage and print an error if specified,
+// it also returns the exit code requested to the function (saves me a line)
+func printUsageGetExitCode(s string, i int) int {
+    if len(s) > 0 {
+        fmt.Printf(s)
+    }
+    fmt.Printf(getAppUsageString())
+    return i
+}
+
+
 func main() {
     // Parse arguments which might get passed to "wol"
     parser := flags.NewParser(&Options, flags.Default & ^flags.HelpFlag)
-    args, error := parser.Parse()
-    macAddr := strings.Join(args, " ")
+    args, err := parser.Parse()
 
     exitCode := 0
     switch {
 
     // Parse Error, print usage
-    case error != nil:
-        fmt.Printf(getAppUsageString())
-        exitCode = 1
+    case err != nil:
+        exitCode = printUsageGetExitCode("", 1)
 
     // No arguments, or help requested, print usage
     case len(os.Args) == 1 || Options.Help:
-        fmt.Printf(getAppUsageString())
+        exitCode = printUsageGetExitCode("", 0)
 
     // "--version" requested
     case Options.Version:
         fmt.Printf("%s\n", Version)
 
-    case len(macAddr) == 0:
-        fmt.Printf("Error: A valid mac address is not specified!\n")
-        fmt.Printf(getAppUsageString())
-        exitCode = 1
+    // Make sure we are being asked to run a command
+    case len(args) == 0:
+        exitCode = printUsageGetExitCode("No command specified, see usage:\n", 1)
 
-    // All other cases go here!
+    // All other cases go here
     case true:
-        err := sendMagicPacket(macAddr)
-        if err != nil {
-            exitCode = 1
+        cmd, args := args[0], args[1:]
+        if isValidCommand(cmd) {
+            err = runCommand(cmd, args)
+            if err != nil {
+                exitCode = printUsageGetExitCode(
+                    fmt.Sprintf("%s\n", err.Error()), 1)
+            }
         } else {
-            fmt.Printf("Magic packet sent successfully to %s\n", macAddr)
+            exitCode = printUsageGetExitCode(
+                fmt.Sprintf("Unknown command %s, see usage:\n", colorize.ColorString(cmd, "red")), 1)
         }
+
     }
     os.Exit(exitCode)
 }

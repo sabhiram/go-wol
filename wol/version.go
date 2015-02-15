@@ -4,6 +4,8 @@ package main
 
 import (
     "fmt"
+    "strings"
+
     "github.com/sabhiram/go-colorize"
 )
 
@@ -80,3 +82,13 @@ func getAppUsageString() string {
     return colorize.Colorize(fmt.Sprintf(UsageString, getAllCommands(), getAllOptions(), Version))
 }
 
+// Returns true if the ValidCommands struct contains an entry with the
+// input string "s"
+func isValidCommand(s string) bool {
+    for _, c := range ValidCommands {
+        if strings.ToLower(s) == c.name {
+            return true
+        }
+    }
+    return false
+}
