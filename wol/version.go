@@ -45,7 +45,7 @@ var UsageString = `Usage:
         <cyan>wol</cyan> [<options>] <yellow>list</yellow>
 
     To delete aliases:
-        <cyan>wol</cyan> [<options>] <yellow>remove</yellow> <mac address | alias>
+        <cyan>wol</cyan> [<options>] <yellow>remove</yellow> <alias>
 
     The following MAC addresses are valid and will match:
     01-23-45-56-67-89, 89:AB:CD:EF:00:12, 89:ab:cd:ef:00:12

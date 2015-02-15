@@ -65,8 +65,14 @@ func runCommand(cmd string, args []string, aliases map[string]string) error {
     switch cmd {
 
     case "alias":
-        fmt.Printf("%s\n", cmd)
-        fmt.Printf("ALIASES: %v\n", aliases);
+        if len(args) >= 2 {
+            // TODO: Validate mac address
+            alias, mac := args[0], args[1]
+            aliases[alias] = mac
+            return flushUserAliases(aliases)
+        } else {
+            return errors.New("alias command requires a <name> and a <mac>")
+        }
 
     case "list":
         if len(aliases) == 0 {
@@ -78,8 +84,13 @@ func runCommand(cmd string, args []string, aliases map[string]string) error {
         }
 
     case "remove":
-        fmt.Printf("%s\n", cmd)
-        fmt.Printf("ALIASES: %v\n", aliases);
+        if len(args) > 0 {
+            alias := args[0]
+            delete(aliases, alias)
+            return flushUserAliases(aliases)
+        } else {
+            return errors.New("remove command requires a <name> of an alias")
+        }
 
     case "wake":
         if len(args) > 0 {
@@ -90,6 +101,7 @@ func runCommand(cmd string, args []string, aliases map[string]string) error {
         } else {
             err = errors.New("No mac address specified to wake command")
         }
+
     default:
         panic("Invalid command passed to runCommand")
 
