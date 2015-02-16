@@ -23,13 +23,15 @@ type MagicPacket struct {
     payload [16]MacAddress
 }
 
-// Returns a MacAddress object given a mac address string
-func GetMacBytes(mac string) (*MacAddress, error) {
-    // Parse MAC addr
+// Returns a pointer to a MacAddress, given a valid MAC Address string
+func GetMacAddressFromString(mac string) (*MacAddress, error) {
+    // First strip the delimiters from the valid MAC Address
     for _, delim := range delims {
         mac = strings.Replace(mac, string(delim), "", -1)
     }
 
+    // Fetch the bytes from the string representation of the
+    // MAC address. Address is []byte
     address, err := hex.DecodeString(mac)
     if err != nil {
         return nil, err
@@ -43,16 +45,14 @@ func GetMacBytes(mac string) (*MacAddress, error) {
     return &ret, nil
 }
 
-// Constructs a "Magic Packet" broadcast frame which contains 6 bytes of
-// 0xff followed by 16 repetitions of a given mac address.
-//
-// This function accepts a mac address string, and returns a pointer to
-// a MagicPacket object */
+// This function accepts a MAC Address string, and returns a pointer to
+// a MagicPacket object. A Magic Packet is a broadcast frame which
+// contains 6 bytes of 0xFF followed by 16 repetitions of a given mac address.
 func NewMagicPacket(mac string) (*MagicPacket, error) {
     var packet  MagicPacket
 
-    // Parse the mac address into a "MacAddress". For the time being, only
-    // the traditional methods of writing MAC addresses are supported.
+    // Parse the MAC Address into a "MacAddress". For the time being, only
+    // the traditional methods of writing MAC Addresses are supported.
     // XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX will match. All other will throw
     // up an error to the caller.
     if re_MAC.MatchString(mac) {
@@ -61,12 +61,12 @@ func NewMagicPacket(mac string) (*MagicPacket, error) {
             packet.header[idx] = 0xff
         }
 
-        addr, err := GetMacBytes(mac)
+        addr, err := GetMacAddressFromString(mac)
         if err != nil {
             return nil, err
         }
 
-        // Setup the payload which is 6 repetitions of the MAC addr
+        // Setup the payload which is 16 repetitions of the MAC addr
         for idx, _ := range packet.payload {
             packet.payload[idx] = *addr
         }

@@ -5,7 +5,7 @@ import (
     "github.com/stretchr/testify/assert"
 )
 
-func TestGetMacBytes(test *testing.T) {
+func TestGetMacAddressFromString(test *testing.T) {
     var PositiveTestCases = []struct {
         mac      string
         expected MacAddress
@@ -15,13 +15,13 @@ func TestGetMacBytes(test *testing.T) {
     }
 
     for _, t := range PositiveTestCases {
-        macAddress, err := GetMacBytes(t.mac)
+        macAddress, err := GetMacAddressFromString(t.mac)
         assert.Equal(test, t.expected, *macAddress)
         assert.Equal(test, err, nil)
     }
 }
 
-func TestGetMacBytesNegative(test *testing.T) {
+func TestGetMacAddressFromStringNegative(test *testing.T) {
     var NegativeTestCases = []struct {
         mac   string
     } {
@@ -30,7 +30,7 @@ func TestGetMacBytesNegative(test *testing.T) {
     }
 
     for _, t := range NegativeTestCases {
-        _, err := GetMacBytes(t.mac)
+        _, err := GetMacAddressFromString(t.mac)
         assert.NotEqual(test, err, nil)
     }
 }
