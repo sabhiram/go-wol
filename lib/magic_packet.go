@@ -49,16 +49,16 @@ func GetMacAddressFromString(mac string) (*MacAddress, error) {
 // a MagicPacket object. A Magic Packet is a broadcast frame which
 // contains 6 bytes of 0xFF followed by 16 repetitions of a given mac address.
 func NewMagicPacket(mac string) (*MagicPacket, error) {
-    var packet  MagicPacket
+    var packet MagicPacket
 
     // Parse the MAC Address into a "MacAddress". For the time being, only
     // the traditional methods of writing MAC Addresses are supported.
-    // XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX will match. All other will throw
+    // XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX will match. All others will throw
     // up an error to the caller.
     if re_MAC.MatchString(mac) {
-        // Setup the header which is 6 repetitions of 0xff
+        // Setup the header which is 6 repetitions of 0xFF
         for idx, _ := range packet.header {
-            packet.header[idx] = 0xff
+            packet.header[idx] = 0xFF
         }
 
         addr, err := GetMacAddressFromString(mac)
@@ -73,6 +73,5 @@ func NewMagicPacket(mac string) (*MagicPacket, error) {
 
         return &packet, nil
     }
-
     return nil, errors.New("Invalid MAC address format seen with " + mac)
 }
