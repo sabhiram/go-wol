@@ -10,7 +10,7 @@ import (
     "errors"
 
     "github.com/sabhiram/go-colorize"
-    wol "github.com/sabhiram/go-wol/lib"
+    wol "github.com/sabhiram/go-wol"
 
     "github.com/jessevdk/go-flags"
 )
@@ -38,36 +38,39 @@ func printUsageGetExitCode(s string, e int) int {
 // Function to send a magic packet to a given mac address
 func sendMagicPacket(macAddr string) error {
     magicPacket, err := wol.NewMagicPacket(macAddr)
-    if err == nil {
-        var buf bytes.Buffer
-        binary.Write(&buf, binary.BigEndian, magicPacket)
-
-        fmt.Printf("Attempting to send a magic packet to MAC %s\n", macAddr)
-        fmt.Printf("... Broadcasting to IP: %s\n", Options.BroadcastIP)
-        fmt.Printf("... Using UDP Port:     %s\n", Options.UDPPort)
-
-        udpAddr, err := net.ResolveUDPAddr("udp", Options.BroadcastIP + ":" + Options.UDPPort)
-        if err != nil {
-            fmt.Printf("Unable to get a UDP address for %s\n", Options.BroadcastIP)
-            return err
-        }
-
-        connection, err := net.DialUDP("udp", nil, udpAddr)
-        if err != nil {
-            fmt.Printf("Unable to dial UDP address for %s\n", Options.BroadcastIP)
-            return err
-        }
-        defer connection.Close()
-
-        bytesWritten, err := connection.Write(buf.Bytes())
-        if err != nil {
-            fmt.Printf("Unable to write packet to connection\n")
-            return err
-        } else if bytesWritten != 102 {
-            fmt.Printf("Warning: %d bytes written, %d expected!\n", bytesWritten, 102)
-        }
+    if err != nil {
+        return err
     }
-    return err
+
+    var buf bytes.Buffer
+    binary.Write(&buf, binary.BigEndian, magicPacket)
+
+    fmt.Printf("Attempting to send a magic packet to MAC %s\n", macAddr)
+    fmt.Printf("... Broadcasting to IP: %s\n", Options.BroadcastIP)
+    fmt.Printf("... Using UDP Port:     %s\n", Options.UDPPort)
+
+    udpAddr, err := net.ResolveUDPAddr("udp", Options.BroadcastIP + ":" + Options.UDPPort)
+    if err != nil {
+        fmt.Printf("Unable to get a UDP address for %s\n", Options.BroadcastIP)
+        return err
+    }
+
+    connection, err := net.DialUDP("udp", nil, udpAddr)
+    if err != nil {
+        fmt.Printf("Unable to dial UDP address for %s\n", Options.BroadcastIP)
+        return err
+    }
+    defer connection.Close()
+
+    bytesWritten, err := connection.Write(buf.Bytes())
+    if err != nil {
+        fmt.Printf("Unable to write packet to connection\n")
+        return err
+    } else if bytesWritten != 102 {
+        fmt.Printf("Warning: %d bytes written, %d expected!\n", bytesWritten, 102)
+    }
+
+    return nil;
 }
 
 // Run one of the supported commands

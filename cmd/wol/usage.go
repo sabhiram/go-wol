@@ -1,5 +1,3 @@
-// This file contains version specific, and usage information for
-// the wol application
 package main
 
 import (
@@ -8,9 +6,6 @@ import (
 
     "github.com/sabhiram/go-colorize"
 )
-
-// Version represents the current Semantic Version of this application
-const Version = "1.0.0"
 
 // List of strings which contain allowed commands
 var ValidCommands = [] struct {
