@@ -70,64 +70,84 @@ func sendMagicPacket(macAddr string) error {
         fmt.Printf("Warning: %d bytes written, %d expected!\n", bytesWritten, 102)
     }
 
-    return nil;
+    return nil
+}
+
+// Run the alias command
+func runCommand_alias(args []string, aliases map[string]string) error {
+    if len(args) >= 2 {
+        // TODO: Validate mac address
+        alias, mac := args[0], args[1]
+        aliases[alias] = mac
+        return flushUserAliases(aliases)
+    }
+    return errors.New("alias command requires a <name> and a <mac>")
+}
+
+// Run the list command
+func runCommand_list(args []string, aliases map[string]string) error {
+    if len(aliases) == 0 {
+        fmt.Printf("No aliases found! Add one with \"wol alias <name> <mac>\"\n")
+    } else {
+        for alias, mac := range aliases {
+            fmt.Printf("    %s - %s\n", alias, mac)
+        }
+    }
+    return nil
+}
+
+// Run the remove command
+func runCommand_remove(args []string, aliases map[string]string) error {
+    if len(args) > 0 {
+        alias := args[0]
+        delete(aliases, alias)
+        return flushUserAliases(aliases)
+    }
+    return errors.New("remove command requires a <name> of an alias")
+}
+
+// Run the wake command
+func runCommand_wake(args []string, aliases map[string]string) error {
+    if len(args) > 0 {
+        macAddr := args[0]
+
+        // If we got an alias - use that as the mac addr
+        if val, ok := aliases[macAddr]; ok {
+            macAddr = val
+        }
+
+        err := sendMagicPacket(macAddr)
+        if err != nil {
+            return errors.New("Unable to send magic packet")
+        }
+
+        fmt.Printf("Magic packet sent successfully to %s\n", macAddr)
+        return nil
+    }
+    return errors.New("No mac address specified to wake command")
 }
 
 // Run one of the supported commands
 func runCommand(cmd string, args []string, aliases map[string]string) error {
-    var err error
     switch cmd {
 
     case "alias":
-        if len(args) >= 2 {
-            // TODO: Validate mac address
-            alias, mac := args[0], args[1]
-            aliases[alias] = mac
-            return flushUserAliases(aliases)
-        } else {
-            return errors.New("alias command requires a <name> and a <mac>")
-        }
+        return runCommand_alias(args, aliases)
 
     case "list":
-        if len(aliases) == 0 {
-            fmt.Printf("No aliases found! Add one with \"wol alias <name> <mac>\"\n")
-        } else {
-            for alias, mac := range aliases {
-                fmt.Printf("    %s - %s\n", alias, mac)
-            }
-        }
+        return runCommand_list(args, aliases)
 
     case "remove":
-        if len(args) > 0 {
-            alias := args[0]
-            delete(aliases, alias)
-            return flushUserAliases(aliases)
-        } else {
-            return errors.New("remove command requires a <name> of an alias")
-        }
+        return runCommand_remove(args, aliases)
 
     case "wake":
-        if len(args) > 0 {
-            macAddr := args[0]
-
-            // If we got an alias - use that as the mac addr
-            if val, ok := aliases[macAddr]; ok {
-                macAddr = val
-            }
-
-            err = sendMagicPacket(macAddr)
-            if err == nil {
-                fmt.Printf("Magic packet sent successfully to %s\n", macAddr)
-            }
-        } else {
-            err = errors.New("No mac address specified to wake command")
-        }
+        return runCommand_wake(args, aliases)
 
     default:
         panic("Invalid command passed to runCommand")
 
     }
-    return err
+    return nil
 }
 
 // Main entry point for binary

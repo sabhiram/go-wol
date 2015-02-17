@@ -1,8 +1,9 @@
-/* WOL is a command line Magic Packet generator to enable remote Wake-on-LAN.
+/*
+wol is a command line Magic Packet generator to enable remote Wake-on-LAN.
 
 // TODO: Better package comment
 
-Here are some examples of common usage.
+Here are some examples of common usage:
 
 Wake up a machine with mac address 00:11:22:aa:bb:cc
     wol wake 00:11:22:aa:bb:cc
