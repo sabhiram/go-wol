@@ -10,6 +10,8 @@ Simple wake on LAN magic packet generator for golang
 
 Each target system typically exposes a setting in it's BIOS which enables or disables the system's WOL capabilities (since this can slowly consume a small amount of standby power).
 
+If you are looking for a tepid overview of the core components of this project in the form of a blog post: [see here](http://sabhiram.com/development/2015/02/16/sending_wol_packets_with_golang.html)
+
 ### Magic Packets (of what?)
 
 The listening interface just looks for a `Magic Packet` with it's MAC address encoded in the WOL scheme. The packet is basically 6 bytes of `0xFF` followed by 16 repetitions of the destination interface's MAC address (102 bytes total). The `Magic Packet` does not have to be exactly 102 bytes, but it's relevant payload is. This payload can be sandwiched anywhere in the broadcast's payload.
