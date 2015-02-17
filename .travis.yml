@@ -13,5 +13,5 @@ before_install:
   - if ! go get code.google.com/p/go.tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
 
 script:
-  - go test -v ./lib -covermode=count -coverprofile=coverage.out
+  - go test -v -covermode=count -coverprofile=coverage.out
   - goveralls -coverprofile=coverage.out -service travis-ci -repotoken $COVERALLS_TOKEN
