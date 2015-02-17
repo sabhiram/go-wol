@@ -1,30 +1,30 @@
 package main
 
 import (
-    "fmt"
-    "strings"
+	"fmt"
+	"strings"
 
-    "github.com/sabhiram/go-colorize"
+	"github.com/sabhiram/go-colorize"
 )
 
 // List of strings which contain allowed commands
-var ValidCommands = [] struct {
-    name, description string
-} {
-    { `wake`,     `wakes up a machine by mac address or alias` },
-    { `list`,     `lists all mac addresses and their aliases`  },
-    { `alias`,    `stores an alias to a mac address`           },
-    { `remove`,   `removes an alias or a mac address`          },
+var ValidCommands = []struct {
+	name, description string
+}{
+	{`wake`, `wakes up a machine by mac address or alias`},
+	{`list`, `lists all mac addresses and their aliases`},
+	{`alias`, `stores an alias to a mac address`},
+	{`remove`, `removes an alias or a mac address`},
 }
 
 // List of options which wol supports
-var ValidOptions = [] struct {
-    short, long, description string
-} {
-    { `v`, `version`, `prints the application version`   },
-    { `h`, `help`,    `prints this help menu`            },
-    { `p`, `port`,    `udp port to send bcast packet to` },
-    { `b`, `bcast`,   `broadcast IP to send packet to`   },
+var ValidOptions = []struct {
+	short, long, description string
+}{
+	{`v`, `version`, `prints the application version`},
+	{`h`, `help`, `prints this help menu`},
+	{`p`, `port`, `udp port to send bcast packet to`},
+	{`b`, `bcast`, `broadcast IP to send packet to`},
 }
 
 // Usage string for wol
@@ -59,34 +59,34 @@ Version:
 
 // Build a command string from the above valid ones
 func getAllCommands() string {
-    commands := ""
-    for _, c := range ValidCommands {
-        commands += fmt.Sprintf("    <yellow>%-16s</yellow> %s\n", c.name, c.description)
-    }
-    return commands
+	commands := ""
+	for _, c := range ValidCommands {
+		commands += fmt.Sprintf("    <yellow>%-16s</yellow> %s\n", c.name, c.description)
+	}
+	return commands
 }
 
 // Build an option string from the above valid ones
 func getAllOptions() string {
-    options := ""
-    for _, o := range ValidOptions {
-        options += fmt.Sprintf("    <yellow>-%s --%-8s</yellow>    %s\n", o.short, o.long, o.description)
-    }
-    return options
+	options := ""
+	for _, o := range ValidOptions {
+		options += fmt.Sprintf("    <yellow>-%s --%-8s</yellow>    %s\n", o.short, o.long, o.description)
+	}
+	return options
 }
 
 // Returns the Usage string for this application
 func getAppUsageString() string {
-    return colorize.Colorize(fmt.Sprintf(UsageString, getAllCommands(), getAllOptions(), Version))
+	return colorize.Colorize(fmt.Sprintf(UsageString, getAllCommands(), getAllOptions(), Version))
 }
 
 // Returns true if the ValidCommands struct contains an entry with the
 // input string "s"
 func isValidCommand(s string) bool {
-    for _, c := range ValidCommands {
-        if strings.ToLower(s) == c.name {
-            return true
-        }
-    }
-    return false
+	for _, c := range ValidCommands {
+		if strings.ToLower(s) == c.name {
+			return true
+		}
+	}
+	return false
 }
