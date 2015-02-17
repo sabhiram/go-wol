@@ -74,7 +74,7 @@ func sendMagicPacket(macAddr string) error {
 }
 
 // Run the alias command
-func runCommand_alias(args []string, aliases map[string]string) error {
+func runAliasCommand(args []string, aliases map[string]string) error {
 	if len(args) >= 2 {
 		// TODO: Validate mac address
 		alias, mac := args[0], args[1]
@@ -85,7 +85,7 @@ func runCommand_alias(args []string, aliases map[string]string) error {
 }
 
 // Run the list command
-func runCommand_list(args []string, aliases map[string]string) error {
+func runListCommand(args []string, aliases map[string]string) error {
 	if len(aliases) == 0 {
 		fmt.Printf("No aliases found! Add one with \"wol alias <name> <mac>\"\n")
 	} else {
@@ -97,7 +97,7 @@ func runCommand_list(args []string, aliases map[string]string) error {
 }
 
 // Run the remove command
-func runCommand_remove(args []string, aliases map[string]string) error {
+func runRemoveCommand(args []string, aliases map[string]string) error {
 	if len(args) > 0 {
 		alias := args[0]
 		delete(aliases, alias)
@@ -107,7 +107,7 @@ func runCommand_remove(args []string, aliases map[string]string) error {
 }
 
 // Run the wake command
-func runCommand_wake(args []string, aliases map[string]string) error {
+func runWakeCommand(args []string, aliases map[string]string) error {
 	if len(args) > 0 {
 		macAddr := args[0]
 
@@ -132,16 +132,16 @@ func runCommand(cmd string, args []string, aliases map[string]string) error {
 	switch cmd {
 
 	case "alias":
-		return runCommand_alias(args, aliases)
+		return runAliasCommand(args, aliases)
 
 	case "list":
-		return runCommand_list(args, aliases)
+		return runListCommand(args, aliases)
 
 	case "remove":
-		return runCommand_remove(args, aliases)
+		return runRemoveCommand(args, aliases)
 
 	case "wake":
-		return runCommand_wake(args, aliases)
+		return runWakeCommand(args, aliases)
 
 	default:
 		panic("Invalid command passed to runCommand")
