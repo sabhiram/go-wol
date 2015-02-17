@@ -54,14 +54,17 @@ func sendMagicPacket(macAddr string) error {
 
         connection, err := net.DialUDP("udp", nil, udpAddr)
         if err != nil {
-            fmt.Printf("Unable to dial UDP addr for %s\n", Options.BroadcastIP)
+            fmt.Printf("Unable to dial UDP address for %s\n", Options.BroadcastIP)
             return err
         }
         defer connection.Close()
 
         bytesWritten, err := connection.Write(buf.Bytes())
-        if bytesWritten != 102 {
-            fmt.Printf("%d bytes written, %d expected!\n", bytesWritten, 102)
+        if err != nil {
+            fmt.Printf("Unable to write packet to connection\n")
+            return err
+        } else if bytesWritten != 102 {
+            fmt.Printf("Warning: %d bytes written, %d expected!\n", bytesWritten, 102)
         }
     }
     return err
