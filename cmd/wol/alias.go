@@ -13,20 +13,25 @@ func loadUserAliases() (map[string]string, error) {
 	ret := make(map[string]string)
 
 	usr, err := user.Current()
-	if err == nil {
-		err = os.MkdirAll(usr.HomeDir+"/.config/go-wol", 0777)
+	if err != nil {
+		return ret, err
 	}
 
-	if err == nil {
-		file, err = os.Open(usr.HomeDir + "/.config/go-wol/aliases")
-		defer file.Close()
+	err = os.MkdirAll(usr.HomeDir+"/.config/go-wol", 0777)
+
+	if err != nil {
+		return ret, err
 	}
 
-	if err == nil {
-		decoder := gob.NewDecoder(file)
-		err = decoder.Decode(&ret)
+	file, err = os.Open(usr.HomeDir + "/.config/go-wol/aliases")
+	defer file.Close()
+
+	if err != nil {
+		return ret, err
 	}
 
+	decoder := gob.NewDecoder(file)
+	err = decoder.Decode(&ret)
 	return ret, err
 }
 
@@ -36,15 +41,18 @@ func flushUserAliases(m map[string]string) error {
 	var file *os.File
 
 	usr, err := user.Current()
-	if err == nil {
-		file, err = os.Create(usr.HomeDir + "/.config/go-wol/aliases")
-		defer file.Close()
+	if err != nil {
+		return err
 	}
 
-	if err == nil {
-		encoder := gob.NewEncoder(file)
-		encoder.Encode(m)
+	file, err = os.Create(usr.HomeDir + "/.config/go-wol/aliases")
+	defer file.Close()
+
+	if err != nil {
+		return err
 	}
 
-	return err
+	encoder := gob.NewEncoder(file)
+	encoder.Encode(m)
+	return nil
 }
