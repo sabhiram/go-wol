@@ -22,7 +22,6 @@ It is important to remember that since this is typically sent over the [data lin
 
 ```
 $go get github.com/sabhiram/go-wol
-$go install github.com/sabhiram/go-wol/...
 $wol wake 08:BA:AD:F0:00:0D
 ```
 
