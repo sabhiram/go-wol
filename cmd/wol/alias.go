@@ -24,11 +24,10 @@ func loadUserAliases() (map[string]string, error) {
 	}
 
 	file, err = os.Open(usr.HomeDir + "/.config/go-wol/aliases")
-	defer file.Close()
-
 	if err != nil {
 		return ret, err
 	}
+	defer file.Close()
 
 	decoder := gob.NewDecoder(file)
 	err = decoder.Decode(&ret)
@@ -46,11 +45,10 @@ func flushUserAliases(m map[string]string) error {
 	}
 
 	file, err = os.Create(usr.HomeDir + "/.config/go-wol/aliases")
-	defer file.Close()
-
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
 	encoder := gob.NewEncoder(file)
 	encoder.Encode(m)
