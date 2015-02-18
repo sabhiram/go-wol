@@ -3,50 +3,25 @@ package wol
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"net"
 	"regexp"
-	"strings"
 )
 
-// Define globals for the MagicPacket and the MacAddress parsing
+// Define globals for the MacAddress parsing
 var (
 	delims = ":-"
 	re_MAC = regexp.MustCompile(`^([0-9a-fA-F]{2}[` + delims + `]){5}([0-9a-fA-F]{2})$`)
 )
 
-// A MacAddress is 6 bytes in a row
-type MacAddress [6]byte
+type MACAddress [6]byte
 
 // A MagicPacket is constituted of 6 bytes of 0xFF followed by
 // 16 groups of the destination MAC address.
 type MagicPacket struct {
 	header  [6]byte
-	payload [16]MacAddress
-}
-
-// Returns a pointer to a MacAddress, given a valid MAC Address string
-func getMacAddressFromString(mac string) (*MacAddress, error) {
-	// First strip the delimiters from the valid MAC Address
-	for _, delim := range delims {
-		mac = strings.Replace(mac, string(delim), "", -1)
-	}
-
-	// Fetch the bytes from the string representation of the
-	// MAC address. Address is []byte
-	address, err := hex.DecodeString(mac)
-	if err != nil {
-		return nil, err
-	}
-
-	var ret MacAddress
-	for idx := range ret {
-		ret[idx] = address[idx]
-	}
-
-	return &ret, nil
+	payload [16]MACAddress
 }
 
 // This function accepts a MAC Address string, and returns a pointer to
@@ -54,30 +29,37 @@ func getMacAddressFromString(mac string) (*MacAddress, error) {
 // contains 6 bytes of 0xFF followed by 16 repetitions of a given mac address.
 func NewMagicPacket(mac string) (*MagicPacket, error) {
 	var packet MagicPacket
+	var macAddr MACAddress
 
-	// Parse the MAC Address into a "MacAddress". For the time being, only
-	// the traditional methods of writing MAC Addresses are supported.
-	// XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX will match. All others will throw
-	// up an error to the caller.
-	if re_MAC.MatchString(mac) {
-		// Setup the header which is 6 repetitions of 0xFF
-		for idx := range packet.header {
-			packet.header[idx] = 0xFF
-		}
-
-		addr, err := getMacAddressFromString(mac)
-		if err != nil {
-			return nil, err
-		}
-
-		// Setup the payload which is 16 repetitions of the MAC addr
-		for idx := range packet.payload {
-			packet.payload[idx] = *addr
-		}
-
-		return &packet, nil
+	// We only support 6 byte MAC addresses since it is much harder to use
+	// the binary.Write(...) interface when the size of the MagicPacket is
+	// dynamic.
+	if !re_MAC.MatchString(mac) {
+		return nil, errors.New("MAC address " + mac + " is not valid.")
 	}
-	return nil, errors.New("Invalid MAC address format seen with " + mac)
+
+	hwAddr, err := net.ParseMAC(mac)
+	if err != nil {
+		return nil, err
+	}
+
+	// Copy bytes from the returned HardwareAddr -> a fixed size
+	// MACAddress
+	for idx := range macAddr {
+		macAddr[idx] = hwAddr[idx]
+	}
+
+	// Setup the header which is 6 repetitions of 0xFF
+	for idx := range packet.header {
+		packet.header[idx] = 0xFF
+	}
+
+	// Setup the payload which is 16 repetitions of the MAC addr
+	for idx := range packet.payload {
+		packet.payload[idx] = macAddr
+	}
+
+	return &packet, nil
 }
 
 // This function accepts a MAC address string, and s
@@ -88,18 +70,20 @@ func SendMagicPacket(macAddr, bcastAddr string) error {
 		return err
 	}
 
+	// Fill our byte buffer with the bytes in our MagicPacket
 	var buf bytes.Buffer
 	binary.Write(&buf, binary.BigEndian, magicPacket)
-
 	fmt.Printf("Attempting to send a magic packet to MAC %s\n", macAddr)
 	fmt.Printf("... Broadcasting to: %s\n", bcastAddr)
 
+	// Get a UDPAddr to send the broadcast to
 	udpAddr, err := net.ResolveUDPAddr("udp", bcastAddr)
 	if err != nil {
 		fmt.Printf("Unable to get a UDP address for %s\n", bcastAddr)
 		return err
 	}
 
+	// Open a UDP connection, and defer its cleanup
 	connection, err := net.DialUDP("udp", nil, udpAddr)
 	if err != nil {
 		fmt.Printf("Unable to dial UDP address for %s\n", bcastAddr)
@@ -107,6 +91,7 @@ func SendMagicPacket(macAddr, bcastAddr string) error {
 	}
 	defer connection.Close()
 
+	// Write the bytes of the MagicPacket to the connection
 	bytesWritten, err := connection.Write(buf.Bytes())
 	if err != nil {
 		fmt.Printf("Unable to write packet to connection\n")
