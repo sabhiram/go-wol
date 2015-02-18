@@ -1,10 +1,7 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
-	"net"
 	"os"
 
 	"errors"
@@ -24,54 +21,6 @@ var (
 		UDPPort     string `short:"p" long:"port" default:"9"`
 	}
 )
-
-// Helper function to dump the usage and print an error if specified,
-// it also returns the exit code requested to the function (saves me a line)
-func printUsageGetExitCode(s string, e int) int {
-	if len(s) > 0 {
-		fmt.Printf(s)
-	}
-	fmt.Printf(getAppUsageString())
-	return e
-}
-
-// Function to send a magic packet to a given mac address
-func sendMagicPacket(macAddr string) error {
-	magicPacket, err := wol.NewMagicPacket(macAddr)
-	if err != nil {
-		return err
-	}
-
-	var buf bytes.Buffer
-	binary.Write(&buf, binary.BigEndian, magicPacket)
-
-	fmt.Printf("Attempting to send a magic packet to MAC %s\n", macAddr)
-	fmt.Printf("... Broadcasting to IP: %s\n", Options.BroadcastIP)
-	fmt.Printf("... Using UDP Port:     %s\n", Options.UDPPort)
-
-	udpAddr, err := net.ResolveUDPAddr("udp", Options.BroadcastIP+":"+Options.UDPPort)
-	if err != nil {
-		fmt.Printf("Unable to get a UDP address for %s\n", Options.BroadcastIP)
-		return err
-	}
-
-	connection, err := net.DialUDP("udp", nil, udpAddr)
-	if err != nil {
-		fmt.Printf("Unable to dial UDP address for %s\n", Options.BroadcastIP)
-		return err
-	}
-	defer connection.Close()
-
-	bytesWritten, err := connection.Write(buf.Bytes())
-	if err != nil {
-		fmt.Printf("Unable to write packet to connection\n")
-		return err
-	} else if bytesWritten != 102 {
-		fmt.Printf("Warning: %d bytes written, %d expected!\n", bytesWritten, 102)
-	}
-
-	return nil
-}
 
 // Run the alias command
 func runAliasCommand(args []string, aliases map[string]string) error {
@@ -116,7 +65,7 @@ func runWakeCommand(args []string, aliases map[string]string) error {
 			macAddr = val
 		}
 
-		err := sendMagicPacket(macAddr)
+		err := wol.SendMagicPacket(macAddr, Options.BroadcastIP+":"+Options.UDPPort)
 		if err != nil {
 			return errors.New("Unable to send magic packet")
 		}
@@ -148,6 +97,16 @@ func runCommand(cmd string, args []string, aliases map[string]string) error {
 
 	}
 	return nil
+}
+
+// Helper function to dump the usage and print an error if specified,
+// it also returns the exit code requested to the function (saves me a line)
+func printUsageGetExitCode(s string, e int) int {
+	if len(s) > 0 {
+		fmt.Printf(s)
+	}
+	fmt.Printf(getAppUsageString())
+	return e
 }
 
 // Main entry point for binary

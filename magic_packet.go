@@ -1,8 +1,12 @@
 package wol
 
 import (
+	"bytes"
+	"encoding/binary"
 	"encoding/hex"
 	"errors"
+	"fmt"
+	"net"
 	"regexp"
 	"strings"
 )
@@ -24,7 +28,7 @@ type MagicPacket struct {
 }
 
 // Returns a pointer to a MacAddress, given a valid MAC Address string
-func GetMacAddressFromString(mac string) (*MacAddress, error) {
+func getMacAddressFromString(mac string) (*MacAddress, error) {
 	// First strip the delimiters from the valid MAC Address
 	for _, delim := range delims {
 		mac = strings.Replace(mac, string(delim), "", -1)
@@ -38,7 +42,7 @@ func GetMacAddressFromString(mac string) (*MacAddress, error) {
 	}
 
 	var ret MacAddress
-	for idx, _ := range ret {
+	for idx := range ret {
 		ret[idx] = address[idx]
 	}
 
@@ -57,21 +61,59 @@ func NewMagicPacket(mac string) (*MagicPacket, error) {
 	// up an error to the caller.
 	if re_MAC.MatchString(mac) {
 		// Setup the header which is 6 repetitions of 0xFF
-		for idx, _ := range packet.header {
+		for idx := range packet.header {
 			packet.header[idx] = 0xFF
 		}
 
-		addr, err := GetMacAddressFromString(mac)
+		addr, err := getMacAddressFromString(mac)
 		if err != nil {
 			return nil, err
 		}
 
 		// Setup the payload which is 16 repetitions of the MAC addr
-		for idx, _ := range packet.payload {
+		for idx := range packet.payload {
 			packet.payload[idx] = *addr
 		}
 
 		return &packet, nil
 	}
 	return nil, errors.New("Invalid MAC address format seen with " + mac)
+}
+
+// This function accepts a MAC address string, and s
+// Function to send a magic packet to a given mac address
+func SendMagicPacket(macAddr, bcastAddr string) error {
+	magicPacket, err := NewMagicPacket(macAddr)
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	binary.Write(&buf, binary.BigEndian, magicPacket)
+
+	fmt.Printf("Attempting to send a magic packet to MAC %s\n", macAddr)
+	fmt.Printf("... Broadcasting to: %s\n", bcastAddr)
+
+	udpAddr, err := net.ResolveUDPAddr("udp", bcastAddr)
+	if err != nil {
+		fmt.Printf("Unable to get a UDP address for %s\n", bcastAddr)
+		return err
+	}
+
+	connection, err := net.DialUDP("udp", nil, udpAddr)
+	if err != nil {
+		fmt.Printf("Unable to dial UDP address for %s\n", bcastAddr)
+		return err
+	}
+	defer connection.Close()
+
+	bytesWritten, err := connection.Write(buf.Bytes())
+	if err != nil {
+		fmt.Printf("Unable to write packet to connection\n")
+		return err
+	} else if bytesWritten != 102 {
+		fmt.Printf("Warning: %d bytes written, %d expected!\n", bytesWritten, 102)
+	}
+
+	return nil
 }

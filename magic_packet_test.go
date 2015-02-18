@@ -15,7 +15,7 @@ func TestGetMacAddressFromString(test *testing.T) {
 	}
 
 	for _, t := range PositiveTestCases {
-		macAddress, err := GetMacAddressFromString(t.mac)
+		macAddress, err := getMacAddressFromString(t.mac)
 		assert.Equal(test, t.expected, *macAddress)
 		assert.Equal(test, err, nil)
 	}
@@ -30,7 +30,7 @@ func TestGetMacAddressFromStringNegative(test *testing.T) {
 	}
 
 	for _, t := range NegativeTestCases {
-		_, err := GetMacAddressFromString(t.mac)
+		_, err := getMacAddressFromString(t.mac)
 		assert.NotEqual(test, err, nil)
 	}
 }
