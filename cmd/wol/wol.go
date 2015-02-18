@@ -65,7 +65,7 @@ func runWakeCommand(args []string, aliases map[string]string) error {
 			macAddr = val
 		}
 
-		err := wol.SendMagicPacket(macAddr, Options.BroadcastIP+":"+Options.UDPPort)
+		err := wol.SendMagicPacket(macAddr, Options.BroadcastIP + ":" + Options.UDPPort)
 		if err != nil {
 			return errors.New("Unable to send magic packet")
 		}
