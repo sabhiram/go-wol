@@ -44,7 +44,7 @@ With the following options (mostly apply to the wake command):
     {`i`, `interface`, `outbound interface to broadcast using`},
 ```
 
-Wake up a machine with mac address `00:11:22:aa:bb:cc`
+Wake up a machine with mac address `00:11:22:aa:bb:cc`:
     
     wol wake 00:11:22:aa:bb:cc
 
@@ -52,7 +52,7 @@ Store an alias:
     
     wol alias skynet 00:11:22:aa:bb:cc
 
-Wake up a machine using an alias
+Wake up a machine using an alias:
 
     wol wake skynet
 
@@ -69,7 +69,6 @@ Store an alias to a MAC using a default interface:
     wol alias skynet 00:11:22:aa:bb:cc eth0
 
 Specify a Broadcast Interface (Local to the sender):
-
 ```
 wol wake skynet -i eth0
 
@@ -78,8 +77,9 @@ wol wake skynet -i eth0
 wol wake skynet --interface eth0
 ```
 
-Specify the Broadcast Port and IP
+Please note that when specifying an interface to use, you can set that as part of the alias. However, if the `-i` option is specified, the specified interface will be used and the one in the alias map will be ignored.
 
+Specify the Broadcast Port and IP:
 ```
 wol wake 00:11:22:aa:bb:cc -b 255.255.255.255 -p 7
 
