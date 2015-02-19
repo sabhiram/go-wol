@@ -43,11 +43,15 @@ View all aliases and corresponding MAC addresses:
     
     wol list
 
-To delete an alias:
+Delete an alias:
     
     wol remove skynet
 
-To specify the Broadcast Port and IP
+Store an alias to a MAC using a default interface:
+
+    wol alias skynet 00:11:22:aa:bb:cc eth0
+
+Specify the Broadcast Port and IP
 
 ```
 wol wake 00:11:22:aa:bb:cc -b 255.255.255.255 -p 7
