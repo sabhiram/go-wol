@@ -83,10 +83,9 @@ func runWakeCommand(args []string, aliases map[string]MacIface) error {
 		bcastInterface = val.Iface
 	}
 
-	// If the command line specified an interface, we override to use that one
-	// regardless of what is set in the alias map
-	if len(args) > 1 {
-		bcastInterface = args[1]
+	// Always use the interface specified in the command line, if it exists
+	if Options.BroadcastInterface != "" {
+		bcastInterface = Options.BroadcastInterface
 	}
 
 	err := wol.SendMagicPacket(macAddr, Options.BroadcastIP + ":" + Options.UDPPort, bcastInterface)
