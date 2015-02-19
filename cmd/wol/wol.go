@@ -23,30 +23,38 @@ var (
 )
 
 // Run the alias command
-func runAliasCommand(args []string, aliases map[string]string) error {
+func runAliasCommand(args []string, aliases map[string]MacIface) error {
 	if len(args) >= 2 {
+		var eth string
+		if len(args) > 2 {
+			eth = args[2]
+		}
 		// TODO: Validate mac address
 		alias, mac := args[0], args[1]
-		aliases[alias] = mac
+		aliases[alias] = MacIface{Mac: mac, Iface: eth}
 		return flushUserAliases(aliases)
 	}
 	return errors.New("alias command requires a <name> and a <mac>")
 }
 
 // Run the list command
-func runListCommand(args []string, aliases map[string]string) error {
+func runListCommand(args []string, aliases map[string]MacIface) error {
 	if len(aliases) == 0 {
 		fmt.Printf("No aliases found! Add one with \"wol alias <name> <mac>\"\n")
 	} else {
-		for alias, mac := range aliases {
-			fmt.Printf("    %s - %s\n", alias, mac)
+		for alias, mi := range aliases {
+			if mi.Iface == "" {
+				fmt.Printf("    %s - %s\n", alias, mi.Mac)
+			} else {
+				fmt.Printf("    %s - %s %s\n", alias, mi.Mac, mi.Iface)
+			}
 		}
 	}
 	return nil
 }
 
 // Run the remove command
-func runRemoveCommand(args []string, aliases map[string]string) error {
+func runRemoveCommand(args []string, aliases map[string]MacIface) error {
 	if len(args) > 0 {
 		alias := args[0]
 		delete(aliases, alias)
@@ -56,16 +64,21 @@ func runRemoveCommand(args []string, aliases map[string]string) error {
 }
 
 // Run the wake command
-func runWakeCommand(args []string, aliases map[string]string) error {
+func runWakeCommand(args []string, aliases map[string]MacIface) error {
 	if len(args) > 0 {
+		var eth string
 		macAddr := args[0]
+		if len(args) > 1 {
+			eth = args[1]
+		}
 
 		// If we got an alias - use that as the mac addr
 		if val, ok := aliases[macAddr]; ok {
-			macAddr = val
+			macAddr = val.Mac
+			eth = val.Iface
 		}
 
-		err := wol.SendMagicPacket(macAddr, Options.BroadcastIP + ":" + Options.UDPPort)
+		err := wol.SendMagicPacket(macAddr, Options.BroadcastIP+":"+Options.UDPPort, eth)
 		if err != nil {
 			return errors.New("Unable to send magic packet")
 		}
@@ -77,7 +90,7 @@ func runWakeCommand(args []string, aliases map[string]string) error {
 }
 
 // Run one of the supported commands
-func runCommand(cmd string, args []string, aliases map[string]string) error {
+func runCommand(cmd string, args []string, aliases map[string]MacIface) error {
 	switch cmd {
 
 	case "alias":
