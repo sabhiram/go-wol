@@ -27,6 +27,23 @@ $wol wake 08:BA:AD:F0:00:0D
 
 ## Usage
 
+Valid commands include:
+```go
+    {`wake`,   `wakes up a machine by mac address or alias`},
+    {`list`,   `lists all mac addresses and their aliases`},
+    {`alias`,  `stores an alias to a mac address`},
+    {`remove`, `removes an alias or a mac address`},
+```
+
+With the following options (mostly apply to the wake command):
+```go
+    {`v`, `version`,   `prints the application version`},
+    {`h`, `help`,      `prints the help menu`},
+    {`p`, `port`,      `udp port to send bcast packet to`},
+    {`b`, `bcast`,     `broadcast IP to send packet to`},
+    {`i`, `interface`, `outbound interface to broadcast using`},
+```
+
 Wake up a machine with mac address `00:11:22:aa:bb:cc`
     
     wol wake 00:11:22:aa:bb:cc
@@ -51,6 +68,16 @@ Store an alias to a MAC using a default interface:
 
     wol alias skynet 00:11:22:aa:bb:cc eth0
 
+Specify a Broadcast Interface (Local to the sender):
+
+```
+wol wake skynet -i eth0
+
+# or
+
+wol wake skynet --interface eth0
+```
+
 Specify the Broadcast Port and IP
 
 ```
@@ -63,11 +90,13 @@ wol wake skynet --bcast 255.255.255.255 --port 7
 
 #### Defaults
 
-The default Broadcast IP is `255.255.255.255` and the UDP Port is `9`. Typically the UDP port is either `7` or `9`.
+The default Broadcast IP is `255.255.255.255` and the UDP Port is `9`. Typically the UDP port is either `7` or `9`. The default interface is set to `""` which tell the program to use any available interface.
 
 #### Alias file
 
 The alias file is typically stored in the user's Home directory under the path of `~/.config/go-wol/aliases`. This is a binary `Gob` which is read from disk on each invocation of `wol`, and flushed to disk if any aliases are modified from the master list.
+
+Please remember that if the dictionary of stuff (or our map[string]MACIface) ever gets modified, the `gob.Decode` from the aliases file will fail. If this occurs - wol will replace the aliases file with an empty one. This is not expected to happen frequently, apologies for the inconvenience.
 
 #### This is how `wol` expects MAC addresses to look
 
