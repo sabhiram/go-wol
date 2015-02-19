@@ -68,16 +68,27 @@ func getIpFromInterface(iface string) (*net.UDPAddr, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	addrs, err := ief.Addrs()
 	if err != nil {
 		return nil, err
+	} else if len(addrs) <= 0 {
+		return nil, errors.New("No address associated with interface " + iface)
 	}
-	if len(addrs) <= 0 {
-		return nil, errors.New("No address associated with interface")
+
+	// Validate that one of the addr's is a valid network IP address
+	for _, addr := range addrs {
+		switch ip := addr.(type) {
+		case *net.IPNet:
+			// Verify that the DefaultMask for the address we want to use exists
+			if ip.IP.DefaultMask() != nil {
+				return &net.UDPAddr{
+					IP: ip.IP,
+				}, nil
+			}
+		}
 	}
-	return &net.UDPAddr{
-		IP: addrs[0].(*net.IPNet).IP,
-	}, nil
+	return nil, errors.New("Unable to find valid IP addr for interface " + iface)
 }
 
 // Function to send a magic packet to a given mac address, and optionally
@@ -107,17 +118,16 @@ func SendMagicPacket(macAddr, bcastAddr, iface string) error {
 		var err error
 		localAddr, err = getIpFromInterface(iface)
 		if err != nil {
-			fmt.Printf("Unable to get address for interface %s\n", iface)
-			fmt.Printf("Error %v\n", err)
-			return err
+			fmt.Printf("ERROR: %s\n", err.Error())
+			return errors.New("Unable to get address for interface " + iface)
 		}
 	}
 
 	// Open a UDP connection, and defer its cleanup
 	connection, err := net.DialUDP("udp", localAddr, udpAddr)
 	if err != nil {
-		fmt.Printf("Unable to dial UDP address for %s\n", bcastAddr)
-		return err
+		fmt.Printf("ERROR: %s\n", err.Error())
+		return errors.New("Unable to dial UDP address.")
 	}
 	defer connection.Close()
 

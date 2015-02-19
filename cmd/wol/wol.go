@@ -15,10 +15,11 @@ import (
 var (
 	// Define holders for the cli arguments we wish to parse
 	Options struct {
-		Version     bool   `short:"v" long:"version"`
-		Help        bool   `short:"h" long:"help"`
-		BroadcastIP string `short:"b" long:"bcast" default:"255.255.255.255"`
-		UDPPort     string `short:"p" long:"port" default:"9"`
+		Version             bool   `short:"v" long:"version"`
+		Help                bool   `short:"h" long:"help"`
+		BroadcastInterface  string `short:"i" long:"interface" default:""`
+		BroadcastIP         string `short:"b" long:"bcast" default:"255.255.255.255"`
+		UDPPort             string `short:"p" long:"port" default:"9"`
 	}
 )
 
@@ -90,7 +91,8 @@ func runWakeCommand(args []string, aliases map[string]MacIface) error {
 
 	err := wol.SendMagicPacket(macAddr, Options.BroadcastIP + ":" + Options.UDPPort, bcastInterface)
 	if err != nil {
-		return errors.New("Unable to send magic packet: " + err.Error())
+		fmt.Printf("ERROR: %s\n", err.Error())
+		return errors.New("Unable to send magic packet")
 	}
 
 	fmt.Printf("Magic packet sent successfully to %s\n", macAddr)
@@ -169,8 +171,8 @@ func main() {
 		if isValidCommand(cmd) {
 			err = runCommand(cmd, args, aliases)
 			if err != nil {
-				exitCode = printUsageGetExitCode(
-					fmt.Sprintf("%s\n", err.Error()), 1)
+				fmt.Printf("%s\n", err.Error())
+				exitCode = 1
 			}
 		} else {
 			exitCode = printUsageGetExitCode(
