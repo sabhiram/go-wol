@@ -31,10 +31,10 @@ var ValidOptions = []struct {
 var UsageString = `Usage:
 
     To wake up a machine:
-        <cyan>wol</cyan> [<options>] <yellow>wake</yellow> <mac address | alias>
+        <cyan>wol</cyan> [<options>] <yellow>wake</yellow> <mac address | alias> <optional interface>
 
     To store an alias:
-        <cyan>wol</cyan> [<options>] <yellow>alias</yellow> <alias> <mac address>
+        <cyan>wol</cyan> [<options>] <yellow>alias</yellow> <alias> <mac address> <optional interface>
 
     To view aliases:
         <cyan>wol</cyan> [<options>] <yellow>list</yellow>

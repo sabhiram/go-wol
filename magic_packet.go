@@ -62,9 +62,28 @@ func NewMagicPacket(mac string) (*MagicPacket, error) {
 	return &packet, nil
 }
 
+// This function gets the address associated with an interface
+func getIpFromInterface(iface string) (*net.UDPAddr, error) {
+	ief, err := net.InterfaceByName(iface)
+	if err != nil {
+		return nil, err
+	}
+	addrs, err := ief.Addrs()
+	if err != nil {
+		return nil, err
+	}
+	if len(addrs) <= 0 {
+		return nil, errors.New("No address associated with interface")
+	}
+	return &net.UDPAddr{
+		IP: addrs[0].(*net.IPNet).IP,
+	}, nil
+}
+
 // This function accepts a MAC address string, and s
 // Function to send a magic packet to a given mac address
-func SendMagicPacket(macAddr, bcastAddr string) error {
+func SendMagicPacket(macAddr, bcastAddr, iface string) error {
+	var localAddr *net.UDPAddr
 	magicPacket, err := NewMagicPacket(macAddr)
 	if err != nil {
 		return err
@@ -83,8 +102,19 @@ func SendMagicPacket(macAddr, bcastAddr string) error {
 		return err
 	}
 
+	//if an interface was specified, get the address associated with it
+	if iface != "" {
+		var err error
+		localAddr, err = getIpFromInterface(iface)
+		if err != nil {
+			fmt.Printf("Unable to get address for interface %s\n", iface)
+			fmt.Printf("Error %v\n", err)
+			return err
+		}
+	}
+
 	// Open a UDP connection, and defer its cleanup
-	connection, err := net.DialUDP("udp", nil, udpAddr)
+	connection, err := net.DialUDP("udp", localAddr, udpAddr)
 	if err != nil {
 		fmt.Printf("Unable to dial UDP address for %s\n", bcastAddr)
 		return err

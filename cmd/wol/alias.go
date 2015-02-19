@@ -6,11 +6,16 @@ import (
 	"os/user"
 )
 
+type MacIface struct {
+	Mac   string
+	Iface string
+}
+
 // Loads the user aliases from the aliases gob stored in
 // ~/.config/go-wol/aliases
-func loadUserAliases() (map[string]string, error) {
+func loadUserAliases() (map[string]MacIface, error) {
 	var file *os.File
-	ret := make(map[string]string)
+	ret := make(map[string]MacIface)
 
 	usr, err := user.Current()
 	if err != nil {
@@ -36,7 +41,7 @@ func loadUserAliases() (map[string]string, error) {
 
 // Flushes the user aliases to the aliases gob stored in
 // ~/.config/go-wol/aliases
-func flushUserAliases(m map[string]string) error {
+func flushUserAliases(m map[string]MacIface) error {
 	var file *os.File
 
 	usr, err := user.Current()

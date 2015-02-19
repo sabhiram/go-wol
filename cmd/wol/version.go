@@ -28,4 +28,4 @@ Specify the Broadcast Port and IP
 package main
 
 // Version represents the current Semantic Version of this application
-const Version = "1.0.0"
+const Version = "1.0.1"
