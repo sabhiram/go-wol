@@ -2,10 +2,14 @@ package main
 
 import (
 	"encoding/gob"
+	"fmt"
 	"os"
 	"os/user"
 )
 
+// This struct holds a MAC Address to wake up, along with
+// an optionally specified default interface to use when
+// typically waking up said interface.
 type MacIface struct {
 	Mac   string
 	Iface string
@@ -22,20 +26,25 @@ func loadUserAliases() (map[string]MacIface, error) {
 		return ret, err
 	}
 
-	err = os.MkdirAll(usr.HomeDir+"/.config/go-wol", 0777)
-
+	// Grab the ~ for the user, and create the go-wol folder
+	// if it does not exist. If the target exists, then
+	// MkdirAll will not return an err.
+	err = os.MkdirAll(usr.HomeDir + "/.config/go-wol", 0777)
 	if err != nil {
-		return ret, err
+		return nil, err
 	}
 
 	file, err = os.Open(usr.HomeDir + "/.config/go-wol/aliases")
 	if err != nil {
-		return ret, err
+		return nil, err
 	}
 	defer file.Close()
 
 	decoder := gob.NewDecoder(file)
-	err = decoder.Decode(&ret)
+	if decoder.Decode(&ret) != nil {
+		fmt.Printf("Unable to load aliases. Resetting aliases list...\n")
+		err = flushUserAliases(ret)
+	}
 	return ret, err
 }
 

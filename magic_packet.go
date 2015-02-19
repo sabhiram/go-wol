@@ -80,10 +80,9 @@ func getIpFromInterface(iface string) (*net.UDPAddr, error) {
 	}, nil
 }
 
-// This function accepts a MAC address string, and s
-// Function to send a magic packet to a given mac address
+// Function to send a magic packet to a given mac address, and optionally
+// receives an iface to broadcast on. An iface of "" implies a nil net.UDPAddr
 func SendMagicPacket(macAddr, bcastAddr, iface string) error {
-	var localAddr *net.UDPAddr
 	magicPacket, err := NewMagicPacket(macAddr)
 	if err != nil {
 		return err
@@ -103,6 +102,7 @@ func SendMagicPacket(macAddr, bcastAddr, iface string) error {
 	}
 
 	//if an interface was specified, get the address associated with it
+	var localAddr *net.UDPAddr
 	if iface != "" {
 		var err error
 		localAddr, err = getIpFromInterface(iface)

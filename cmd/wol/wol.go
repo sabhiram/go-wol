@@ -65,28 +65,36 @@ func runRemoveCommand(args []string, aliases map[string]MacIface) error {
 
 // Run the wake command
 func runWakeCommand(args []string, aliases map[string]MacIface) error {
-	if len(args) > 0 {
-		var eth string
-		macAddr := args[0]
-		if len(args) > 1 {
-			eth = args[1]
-		}
-
-		// If we got an alias - use that as the mac addr
-		if val, ok := aliases[macAddr]; ok {
-			macAddr = val.Mac
-			eth = val.Iface
-		}
-
-		err := wol.SendMagicPacket(macAddr, Options.BroadcastIP+":"+Options.UDPPort, eth)
-		if err != nil {
-			return errors.New("Unable to send magic packet")
-		}
-
-		fmt.Printf("Magic packet sent successfully to %s\n", macAddr)
-		return nil
+	if len(args) <= 0 {
+		return errors.New("No mac address specified to wake command")
 	}
-	return errors.New("No mac address specified to wake command")
+
+	// bcastInterface can be "eth0", "eth1", etc.. An empty string implies
+	// that we use the default interface when sending the UDP packet (nil)
+	bcastInterface := ""
+	macAddr := args[0]
+
+	// First we need to see if this macAddr is actually an alias, if it is
+	// we set the eth interface based on the stored item, and set the macAddr
+	// based on the alias entry's mac for this alias
+	if val, ok := aliases[macAddr]; ok {
+		macAddr = val.Mac
+		bcastInterface = val.Iface
+	}
+
+	// If the command line specified an interface, we override to use that one
+	// regardless of what is set in the alias map
+	if len(args) > 1 {
+		bcastInterface = args[1]
+	}
+
+	err := wol.SendMagicPacket(macAddr, Options.BroadcastIP + ":" + Options.UDPPort, bcastInterface)
+	if err != nil {
+		return errors.New("Unable to send magic packet: " + err.Error())
+	}
+
+	fmt.Printf("Magic packet sent successfully to %s\n", macAddr)
+	return nil
 }
 
 // Run one of the supported commands
@@ -128,6 +136,9 @@ func main() {
 
 	// Load the list of aliases from ~/.config/go-wol/aliases
 	aliases, err := loadUserAliases()
+	if err != nil {
+		panic("Unable to load user aliases! Exiting...")
+	}
 
 	// Parse arguments which might get passed to "wol"
 	parser := flags.NewParser(&Options, flags.Default & ^flags.HelpFlag)
