@@ -11,9 +11,9 @@ import (
 var ValidCommands = []struct {
 	name, description string
 }{
-	{`wake`,   `wakes up a machine by mac address or alias`},
-	{`list`,   `lists all mac addresses and their aliases`},
-	{`alias`,  `stores an alias to a mac address`},
+	{`wake`, `wakes up a machine by mac address or alias`},
+	{`list`, `lists all mac addresses and their aliases`},
+	{`alias`, `stores an alias to a mac address`},
 	{`remove`, `removes an alias or a mac address`},
 }
 
@@ -21,11 +21,11 @@ var ValidCommands = []struct {
 var ValidOptions = []struct {
 	short, long, description string
 }{
-	{`v`, `version`,   `prints the application version`},
-	{`h`, `help`,      `prints this help menu`},
-	{`p`, `port`,      `udp port to send bcast packet to`},
-	{`b`, `bcast`,     `broadcast IP to send packet to`},
-    {`i`, `interface`, `outbound interface to broadcast using`},
+	{`v`, `version`, `prints the application version`},
+	{`h`, `help`, `prints this help menu`},
+	{`p`, `port`, `udp port to send bcast packet to`},
+	{`b`, `bcast`, `broadcast IP to send packet to`},
+	{`i`, `interface`, `outbound interface to broadcast using`},
 }
 
 // Usage string for wol
