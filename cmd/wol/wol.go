@@ -7,8 +7,7 @@ import (
 	"errors"
 
 	"github.com/sabhiram/go-colorize"
-	wol "github.com/traetox/go-wol"
-	//wol "github.com/sabhiram/go-wol"
+	wol "github.com/sabhiram/go-wol"
 
 	"github.com/jessevdk/go-flags"
 )
