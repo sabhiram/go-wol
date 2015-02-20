@@ -5,34 +5,41 @@ import (
 	"encoding/gob"
 	"errors"
 	"github.com/boltdb/bolt"
-	"os/user"
 	"sync"
 )
-
-type Aliases struct {
-	mtx *sync.Mutex
-	db  *bolt.DB
-}
 
 const (
 	MainBucketName string = "Aliases"
 )
 
-// This struct holds a MAC Address to wake up, along with
-// an optionally specified default interface to use when
-// typically waking up said interface.
+// This struct holds a pointer to a mutex which will be acquired and released
+// as transactions are carried out on the `db`.
+type Aliases struct {
+	mtx *sync.Mutex
+	db  *bolt.DB
+}
+
+// This struct holds a MAC Address to wake up, along with an optionally
+// specified default interface to use when typically waking up said interface.
 type MacIface struct {
 	Mac   string
 	Iface string
 }
 
-func OpenDB(path string) (*Aliases, error) {
-	usr, err := user.Current()
-	if err != nil {
-		return nil, err
-	}
+// Takes a byte buffer and converts decodes it using the gob package
+// to a MacIface entry
+func DecodeToMacIface(buf *bytes.Buffer) (MacIface, error) {
+	var entry MacIface
+	decoder := gob.NewDecoder(buf)
+	err := decoder.Decode(&entry)
+	return entry, err
+}
 
-	db, err := bolt.Open(usr.HomeDir+"/.config/go-wol", 0660, nil)
+// This function fetches a boltDb entity at a given `dbpath`. The db just
+// contains a default bucket called `Aliases` which is where the alias
+// entries are stored.
+func LoadAliases(dbpath string) (*Aliases, error) {
+	db, err := bolt.Open(dbpath, 0660, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -50,96 +57,90 @@ func OpenDB(path string) (*Aliases, error) {
 	}, nil
 }
 
-//Add updates an alias entry or adds a new alias entry
-//If the alias already exists it is just overwritten
+// Add updates an alias entry or adds a new alias entry. If the alias already
+// exists it is just overwritten
 func (a *Aliases) Add(alias, mac, iface string) error {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
-	//we don't have to worry about the key existing, as we will just
-	//update it if it is already there
-	bb := bytes.NewBuffer(nil)
-	genc := gob.NewEncoder(bb)
-	if err := genc.Encode(MacIface{Mac: mac, Iface: iface}); err != nil {
+
+	// Create a buffer to store the encoded MAC, interface pair
+	buf := bytes.NewBuffer(nil)
+	entry := MacIface{Mac: mac, Iface: iface}
+	if err := gob.NewEncoder(buf).Encode(entry); err != nil {
 		return err
 	}
-	if err := a.db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(MainBucketName))
-		if err := b.Put([]byte(alias), bb.Bytes()); err != nil {
+
+	// We don't have to worry about the key existing, as we will just
+	// update it if it is already there
+	return a.db.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(MainBucketName))
+		if err := bucket.Put([]byte(alias), buf.Bytes()); err != nil {
 			return err
 		}
 		return nil
-	}); err != nil {
-		return err
-	}
-	return nil
+	})
 }
 
-//Del removes an alias from the store based on the alias string
+// Del removes an alias from the store based on the alias string
 func (a *Aliases) Del(alias string) error {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
-	if err := a.db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(MainBucketName))
-		if err := b.Delete([]byte(alias)); err != nil {
+
+	return a.db.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(MainBucketName))
+		if err := bucket.Delete([]byte(alias)); err != nil {
 			return err
 		}
 		return nil
-	}); err != nil {
-		return err
-	}
-	return nil
+	})
 }
 
-//Get retrieves a MacIface from the store based on an alias string
+// Get retrieves a MacIface from the store based on an alias string
 func (a *Aliases) Get(alias string) (MacIface, error) {
-	var mi MacIface
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
-	if err := a.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(MainBucketName))
-		v := b.Get([]byte(alias))
-		if v == nil {
-			return errors.New("Alias not found")
+
+	var entry MacIface
+	err := a.db.View(func(tx *bolt.Tx) error {
+		var err error
+
+		bucket := tx.Bucket([]byte(MainBucketName))
+		value := bucket.Get([]byte(alias))
+		if value == nil {
+			return errors.New("Alias not found in db")
 		}
-		bb := bytes.NewBuffer(v)
-		gdec := gob.NewDecoder(bb)
-		if err := gdec.Decode(&mi); err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
-		return mi, err
-	}
-	return mi, nil
+
+		entry, err = DecodeToMacIface(bytes.NewBuffer(value))
+		return err
+	})
+	return entry, err
 }
 
-//Close closes the alias store
-func (a *Aliases) Close() error {
-	a.mtx.Lock()
-	defer a.mtx.Unlock()
-	return a.db.Close()
-}
-
-//List returns a map containing all alias MacIface pairs
+// List returns a map containing all alias MacIface pairs
 func (a *Aliases) List() (map[string]MacIface, error) {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
-	mp := make(map[string]MacIface, 1)
-	if err := a.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(MainBucketName))
-		c := b.Cursor()
-		for k, v := c.First(); k != nil; k, v = c.Next() {
-			var mi MacIface
-			bb := bytes.NewBuffer(v)
-			gdec := gob.NewDecoder(bb)
-			if err := gdec.Decode(&mi); err != nil {
+
+	aliasMap := make(map[string]MacIface, 1)
+	err := a.db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(MainBucketName))
+		cursor := bucket.Cursor()
+		for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
+			if entry, err := DecodeToMacIface(bytes.NewBuffer(v)); err == nil {
+				aliasMap[string(k)] = entry
+			} else {
 				return err
 			}
-			mp[string(k)] = mi
 		}
 		return nil
-	}); err != nil {
-		return nil, err
-	}
-	return mp, nil
+	})
+	return aliasMap, err
+}
+
+// Close closes the alias store
+func (a *Aliases) Close() error {
+	a.mtx.Lock()
+	defer a.mtx.Unlock()
+
+	return a.db.Close()
 }

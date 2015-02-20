@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/user"
 
 	"errors"
 
@@ -10,10 +11,6 @@ import (
 	wol "github.com/sabhiram/go-wol"
 
 	"github.com/jessevdk/go-flags"
-)
-
-const (
-	AliasPath string = `~/.config/go-wol/aliases`
 )
 
 var (
@@ -143,10 +140,16 @@ func printUsageGetExitCode(s string, e int) int {
 func main() {
 	var args []string
 
-	// Load the list of aliases from ~/.config/go-wol/aliases
-	aliases, err := OpenDB(AliasPath)
+	// Detect the current user to figure out what their ~ is
+	usr, err := user.Current()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to open Alias DB: %v\n", err)
+		panic("Unable to determine current user. Exiting...")
+	}
+
+	// Load the list of aliases from the file at ~/.config/go-wol/bolt.db
+	aliases, err := LoadAliases(usr.HomeDir + "/.config/go-wol/bolt.db")
+	if err != nil {
+		fmt.Printf("Failed to open WOL DB: %v\n", err)
 		panic("Unable to load user aliases! Exiting...")
 	}
 	defer aliases.Close()
