@@ -12,19 +12,23 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
+const (
+	AliasPath string = `~/.config/go-wol/aliases`
+)
+
 var (
 	// Define holders for the cli arguments we wish to parse
 	Options struct {
-		Version             bool   `short:"v" long:"version"`
-		Help                bool   `short:"h" long:"help"`
-		BroadcastInterface  string `short:"i" long:"interface" default:""`
-		BroadcastIP         string `short:"b" long:"bcast" default:"255.255.255.255"`
-		UDPPort             string `short:"p" long:"port" default:"9"`
+		Version            bool   `short:"v" long:"version"`
+		Help               bool   `short:"h" long:"help"`
+		BroadcastInterface string `short:"i" long:"interface" default:""`
+		BroadcastIP        string `short:"b" long:"bcast" default:"255.255.255.255"`
+		UDPPort            string `short:"p" long:"port" default:"9"`
 	}
 )
 
 // Run the alias command
-func runAliasCommand(args []string, aliases map[string]MacIface) error {
+func runAliasCommand(args []string, aliases *Aliases) error {
 	if len(args) >= 2 {
 		var eth string
 		if len(args) > 2 {
@@ -32,18 +36,22 @@ func runAliasCommand(args []string, aliases map[string]MacIface) error {
 		}
 		// TODO: Validate mac address
 		alias, mac := args[0], args[1]
-		aliases[alias] = MacIface{Mac: mac, Iface: eth}
-		return flushUserAliases(aliases)
+		return aliases.Add(alias, mac, eth)
 	}
 	return errors.New("alias command requires a <name> and a <mac>")
 }
 
 // Run the list command
-func runListCommand(args []string, aliases map[string]MacIface) error {
-	if len(aliases) == 0 {
+func runListCommand(args []string, aliases *Aliases) error {
+	mp, err := aliases.List()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to get list of aliases: %v\n", err)
+		return err
+	}
+	if len(mp) == 0 {
 		fmt.Printf("No aliases found! Add one with \"wol alias <name> <mac>\"\n")
 	} else {
-		for alias, mi := range aliases {
+		for alias, mi := range mp {
 			if mi.Iface == "" {
 				fmt.Printf("    %s - %s\n", alias, mi.Mac)
 			} else {
@@ -55,17 +63,16 @@ func runListCommand(args []string, aliases map[string]MacIface) error {
 }
 
 // Run the remove command
-func runRemoveCommand(args []string, aliases map[string]MacIface) error {
+func runRemoveCommand(args []string, aliases *Aliases) error {
 	if len(args) > 0 {
 		alias := args[0]
-		delete(aliases, alias)
-		return flushUserAliases(aliases)
+		return aliases.Del(alias)
 	}
 	return errors.New("remove command requires a <name> of an alias")
 }
 
 // Run the wake command
-func runWakeCommand(args []string, aliases map[string]MacIface) error {
+func runWakeCommand(args []string, aliases *Aliases) error {
 	if len(args) <= 0 {
 		return errors.New("No mac address specified to wake command")
 	}
@@ -78,9 +85,10 @@ func runWakeCommand(args []string, aliases map[string]MacIface) error {
 	// First we need to see if this macAddr is actually an alias, if it is
 	// we set the eth interface based on the stored item, and set the macAddr
 	// based on the alias entry's mac for this alias
-	if val, ok := aliases[macAddr]; ok {
-		macAddr = val.Mac
-		bcastInterface = val.Iface
+	mi, err := aliases.Get(macAddr)
+	if err == nil {
+		macAddr = mi.Mac
+		bcastInterface = mi.Iface
 	}
 
 	// Always use the interface specified in the command line, if it exists
@@ -88,7 +96,7 @@ func runWakeCommand(args []string, aliases map[string]MacIface) error {
 		bcastInterface = Options.BroadcastInterface
 	}
 
-	err := wol.SendMagicPacket(macAddr, Options.BroadcastIP + ":" + Options.UDPPort, bcastInterface)
+	err = wol.SendMagicPacket(macAddr, Options.BroadcastIP+":"+Options.UDPPort, bcastInterface)
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err.Error())
 		return errors.New("Unable to send magic packet")
@@ -99,7 +107,7 @@ func runWakeCommand(args []string, aliases map[string]MacIface) error {
 }
 
 // Run one of the supported commands
-func runCommand(cmd string, args []string, aliases map[string]MacIface) error {
+func runCommand(cmd string, args []string, aliases *Aliases) error {
 	switch cmd {
 
 	case "alias":
@@ -136,10 +144,12 @@ func main() {
 	var args []string
 
 	// Load the list of aliases from ~/.config/go-wol/aliases
-	aliases, err := loadUserAliases()
+	aliases, err := OpenDB(AliasPath)
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to open Alias DB: %v\n", err)
 		panic("Unable to load user aliases! Exiting...")
 	}
+	defer aliases.Close()
 
 	// Parse arguments which might get passed to "wol"
 	parser := flags.NewParser(&Options, flags.Default & ^flags.HelpFlag)
