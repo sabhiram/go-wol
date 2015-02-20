@@ -149,6 +149,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Failed to open Alias DB: %v\n", err)
 		panic("Unable to load user aliases! Exiting...")
 	}
+	defer aliases.Close()
 
 	// Parse arguments which might get passed to "wol"
 	parser := flags.NewParser(&Options, flags.Default & ^flags.HelpFlag)
