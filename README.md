@@ -97,9 +97,7 @@ The default Broadcast IP is `255.255.255.255` and the UDP Port is `9`. Typically
 
 #### Alias file
 
-The alias file is typically stored in the user's Home directory under the path of `~/.config/go-wol/aliases`. This is a binary `Gob` which is read from disk on each invocation of `wol`, and flushed to disk if any aliases are modified from the master list.
-
-Please remember that if the dictionary of stuff (or our map[string]MACIface) ever gets modified, the `gob.Decode` from the aliases file will fail. If this occurs - wol will replace the aliases file with an empty one. This is not expected to happen frequently, apologies for the inconvenience.
+The alias file is typically stored in the user's Home directory under the path of `~/.config/go-wol/aliases`. This is a very simple [`BoltDB`](https://github.com/boltdb/bolt) which reads a per-alias `Gob` made up of a MAC address and an optional preferred outbound interface. 
 
 #### This is how `wol` expects MAC addresses to look
 
@@ -116,3 +114,8 @@ All commits and PRs will get run on TravisCI and have corresponding coverage rep
 To run the tests:
 
     go test -v github.com/sabhiram/go-wol/...
+
+## Contributors:
+
+Thanks to:
+1. @traetox for helping adding the optional outbound interface for MagicPackets, and swapping out the `Gob` written to disk for a more elegant `BoltDB` solution.
