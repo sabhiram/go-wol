@@ -52,9 +52,12 @@ Store an alias:
     
     wol alias skynet 00:11:22:aa:bb:cc
 
+Note that when waking up a machine, the `wake` command pretty much exists for clarity. You can safely omit it (unless your alias name is `list`, `wake`, `alias` or `remove`).
+
 Wake up a machine using an alias:
 
     wol wake skynet
+    wol skynet
 
 View all aliases and corresponding MAC addresses:
     

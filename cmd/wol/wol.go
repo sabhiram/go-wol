@@ -7,7 +7,6 @@ import (
 
 	"errors"
 
-	"github.com/sabhiram/go-colorize"
 	wol "github.com/sabhiram/go-wol"
 
 	"github.com/jessevdk/go-flags"
@@ -173,22 +172,22 @@ func main() {
 	case Options.Version:
 		fmt.Printf("%s\n", Version)
 
-	// Make sure we are being asked to run a command
+	// Make sure we are being asked to run a something
 	case len(args) == 0:
 		exitCode = printUsageGetExitCode("No command specified, see usage:\n", 1)
 
 	// All other cases go here
 	case true:
-		cmd, args := args[0], args[1:]
+		cmd, cmdArgs := args[0], args[1:]
 		if isValidCommand(cmd) {
-			err = runCommand(cmd, args, aliases)
-			if err != nil {
-				fmt.Printf("%s\n", err.Error())
-				exitCode = 1
-			}
+			err = runCommand(cmd, cmdArgs, aliases)
 		} else {
-			exitCode = printUsageGetExitCode(
-				fmt.Sprintf("Unknown command %s, see usage:\n", colorize.ColorString(cmd, "red")), 1)
+			err = runWakeCommand(args, aliases)
+		}
+
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+			exitCode = 1
 		}
 
 	}
