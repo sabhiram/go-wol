@@ -13,7 +13,7 @@ before_install:
   - if ! go get code.google.com/p/go.tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
 
 script:
-  - echo "mode: count" > coverage.out
+  - echo -e "mode: count" > coverage.out
   - go test -v -covermode=count -coverprofile=magic_packet.out
   - go test -v ./cmd/wol -covermode=count -coverprofile=wol.out
   - cat magic_packet.out | tail -n +2 >> coverage.out
