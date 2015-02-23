@@ -5,11 +5,17 @@ import (
 	"encoding/gob"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 	"os"
 	"testing"
+
+	"regexp"
+	"runtime"
 )
 
-// This is just a dummy test to enable cross package coverage
+var RE_stripFnPreamble = regexp.MustCompile(`^.*\.(.*)$`)
+
+// Validate the DecodeToMacIface function
 func TestDecodeToMacIface(test *testing.T) {
 	var TestCases = []MacIface{
 		{"00:00:00:00:00:00", "eth0"},
@@ -20,39 +26,61 @@ func TestDecodeToMacIface(test *testing.T) {
 		// First encode the MacIface to a bunch of bytes
 		buf := bytes.NewBuffer(nil)
 		err := gob.NewEncoder(buf).Encode(entry)
-		assert.Equal(test, nil, err)
+		assert.Nil(test, err)
 
 		// Invoke the function and validate that it is equal
 		// to our starting MacIface
 		result, err := DecodeToMacIface(buf)
-		assert.Equal(test, nil, err)
+		assert.Nil(test, err)
 		assert.Equal(test, entry.Mac, result.Mac)
 		assert.Equal(test, entry.Iface, result.Iface)
 	}
+}
+
+// Validate that an invalid db path errors out
+func TestInvalidDbPath(test *testing.T) {
+	aliases, err := LoadAliases("./dir/no/existy/_test_TestInvalidDbPath")
+	assert.NotNil(test, err)
+	assert.Nil(test, aliases)
+}
+
+// Tests which validate various parts of the DB functionality need
+// a common Setup and Teardown to create the db etc
+type AliasDBTests struct {
+	suite.Suite
+	dbName  string
+	aliases *Aliases
 }
 
 // The Setup function is responsible for creating a temporary
 // BoltDB to test against. Then, it returns the path to the
 // db it creates so we can clean this up at teardown time (along
 // with a pointer to the db instance).
-func AliasSetup(test *testing.T, dbPath string) (*Aliases, string) {
-	aliases, err := LoadAliases(dbPath)
-	assert.Equal(test, nil, err)
-	return aliases, dbPath
+func (suite *AliasDBTests) SetupTest() {
+	pc, _, _, ok := runtime.Caller(1)
+	if ok {
+		suite.dbName = RE_stripFnPreamble.ReplaceAllString(runtime.FuncForPC(pc).Name(), "$1")
+	}
+
+	var err error
+	suite.aliases, err = LoadAliases("./" + suite.dbName)
+	assert.Nil(suite.T(), err)
 }
 
 // The Teardown function closes the connection to the DB, and
 // removes the temporary file created for the same
-func AliasTeardown(test *testing.T, aliases *Aliases, dbPath string) {
+func (suite *AliasDBTests) TearDownTest() {
 	// Close the connection to the bolt db
-	err := aliases.Close()
-	assert.Equal(test, nil, err)
+	err := suite.aliases.Close()
+	assert.Nil(suite.T(), err)
+
 	// Remove the temporary test db
-	err = os.Remove(dbPath)
-	assert.Equal(test, nil, err)
+	err = os.Remove("./" + suite.dbName)
+	assert.Nil(suite.T(), err)
 }
 
-func TestAddAlias(test *testing.T) {
+// Validates the Aliases Add function
+func (suite *AliasDBTests) TestAddAlias() {
 	var TestCases = []struct {
 		alias, mac, iface string
 	}{
@@ -62,50 +90,46 @@ func TestAddAlias(test *testing.T) {
 		{"four", "00:00:00:00:11:AA", ""},
 	}
 
-	// Open a test db before we start any of the tests
-	aliases, dbPath := AliasSetup(test, "./_test_TestAddAlias")
-	// Cleanup after the tests run
-	defer AliasTeardown(test, aliases, dbPath)
-
 	entryCount := 0
 	for _, entry := range TestCases {
 		// Add the alias to the db
-		err := aliases.Add(entry.alias, entry.mac, entry.iface)
-		assert.Equal(test, nil, err)
+		err := suite.aliases.Add(entry.alias, entry.mac, entry.iface)
+		assert.Nil(suite.T(), err)
 		entryCount += 1
 
 		// Validate that we have "entryCount" number of aliases added
-		list, err := aliases.List()
-		assert.Equal(test, nil, err)
-		assert.Equal(test, entryCount, len(list))
+		list, err := suite.aliases.List()
+		assert.Nil(suite.T(), err)
+		assert.Equal(suite.T(), entryCount, len(list))
 
 		// Check to ensure that the current map contains the key we
 		// just added to the db
-		assert.Equal(test, entry.mac, list[entry.alias].Mac)
-		assert.Equal(test, entry.iface, list[entry.alias].Iface)
+		assert.Equal(suite.T(), entry.mac, list[entry.alias].Mac)
+		assert.Equal(suite.T(), entry.iface, list[entry.alias].Iface)
 	}
 }
 
-func TestAddDuplicateAlias(test *testing.T) {
-	// Open a test db before we start any of the tests
-	aliases, dbPath := AliasSetup(test, "./_test_TestAddDuplicateAlias")
-	// Cleanup after the tests run
-	defer AliasTeardown(test, aliases, dbPath)
-
-	err := aliases.Add("test01", "00:11:22:33:44:55", "eth0")
-	assert.Equal(test, nil, err)
+// Adding a duplicate entry should overwrite the original one
+func (suite *AliasDBTests) TestAddDuplicateAlias() {
+	err := suite.aliases.Add("test01", "00:11:22:33:44:55", "eth0")
+	assert.Nil(suite.T(), err)
 
 	// Validate the first entry exists
-	list, err := aliases.List()
-	assert.Equal(test, nil, err)
-	assert.Equal(test, "00:11:22:33:44:55", list["test01"].Mac)
-	assert.Equal(test, "eth0", list["test01"].Iface)
+	list, err := suite.aliases.List()
+	assert.Nil(suite.T(), err)
+	assert.Equal(suite.T(), "00:11:22:33:44:55", list["test01"].Mac)
+	assert.Equal(suite.T(), "eth0", list["test01"].Iface)
 
-	err = aliases.Add("test01", "00:11:22:33:44:66", "")
-	assert.Equal(test, nil, err)
+	err = suite.aliases.Add("test01", "00:11:22:33:44:66", "")
+	assert.Nil(suite.T(), err)
 
-	list, err = aliases.List()
-	assert.Equal(test, nil, err)
-	assert.Equal(test, "00:11:22:33:44:66", list["test01"].Mac)
-	assert.Equal(test, "", list["test01"].Iface)
+	list, err = suite.aliases.List()
+	assert.Nil(suite.T(), err)
+	assert.Equal(suite.T(), "00:11:22:33:44:66", list["test01"].Mac)
+	assert.Equal(suite.T(), "", list["test01"].Iface)
+}
+
+// Group up all the test suites we wish to run and dispatch them here
+func TestRunAllSuites(t *testing.T) {
+	suite.Run(t, new(AliasDBTests))
 }
