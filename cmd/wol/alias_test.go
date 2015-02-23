@@ -129,6 +129,60 @@ func (suite *AliasDBTests) TestAddDuplicateAlias() {
 	assert.Equal(suite.T(), "", list["test01"].Iface)
 }
 
+// Adding a duplicate entry should overwrite the original one
+func (suite *AliasDBTests) TestDeleteAlias() {
+	var err error
+	var list map[string]MacIface
+
+	err = suite.aliases.Add("test01", "00:11:22:33:44:55", "eth0")
+	assert.Nil(suite.T(), err)
+	err = suite.aliases.Add("test02", "00:11:22:33:44:66", "")
+	assert.Nil(suite.T(), err)
+
+	// Validate that we have two items in the db
+	list, err = suite.aliases.List()
+	assert.Nil(suite.T(), err)
+	assert.Equal(suite.T(), 2, len(list))
+
+	// Remove test01
+	err = suite.aliases.Del("test01")
+	assert.Nil(suite.T(), err)
+	list, err = suite.aliases.List()
+	assert.Nil(suite.T(), err)
+	assert.Equal(suite.T(), 1, len(list))
+
+	// Remove test02
+	err = suite.aliases.Del("test02")
+	assert.Nil(suite.T(), err)
+	list, err = suite.aliases.List()
+	assert.Nil(suite.T(), err)
+	assert.Equal(suite.T(), 0, len(list))
+}
+
+// Adding a duplicate entry should overwrite the original one
+func (suite *AliasDBTests) TestGetAlias() {
+    var mi MacIface
+
+    var TestCases = []struct {
+        alias, mac, iface string
+    }{
+        {"one", "00:00:00:00:00:00", "eth0"},
+        {"two", "00:00:00:00:00:AA", "eth1"},
+        {"three", "00:00:00:00:11:00", ""},
+        {"four", "00:00:00:00:11:AA", ""},
+    }
+
+    for _, entry := range TestCases {
+        err := suite.aliases.Add(entry.alias, entry.mac, entry.iface)
+        assert.Nil(suite.T(), err)
+
+        mi, err = suite.aliases.Get(entry.alias)
+        assert.Nil(suite.T(), err)
+        assert.Equal(suite.T(), entry.mac, mi.Mac)
+        assert.Equal(suite.T(), entry.iface, mi.Iface)
+    }
+}
+
 // Group up all the test suites we wish to run and dispatch them here
 func TestRunAllSuites(t *testing.T) {
 	suite.Run(t, new(AliasDBTests))
