@@ -6,19 +6,21 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"os"
-	"testing"
 
+    "os"
+	"testing"
 	"regexp"
 	"runtime"
 )
 
+// Helper regex to strip the preamble from the function name. This is
+// used to create a temp db file per test (based on the test name).
 var RE_stripFnPreamble = regexp.MustCompile(`^.*\.(.*)$`)
 
 // Validate the DecodeToMacIface function
 func TestDecodeToMacIface(test *testing.T) {
 	var TestCases = []MacIface{
-		{"00:00:00:00:00:00", "eth0"},
+		{"00:00:00:00:00:00", ""},
 		{"00:00:00:00:00:AA", "eth1"},
 	}
 
@@ -37,6 +39,27 @@ func TestDecodeToMacIface(test *testing.T) {
 	}
 }
 
+// Validate the EncodeFromMacIface function
+func TestEncodeFromMacIface(test *testing.T) {
+    var TestCases = []MacIface{
+        {"00:00:00:00:00:00", "eth0"},
+        {"00:00:00:00:00:AA", ""},
+    }
+
+    for _, entry := range TestCases {
+        // First encode the MacIface to a bunch of bytes
+        buf, err := EncodeFromMacIface(entry.Mac, entry.Iface)
+        assert.Nil(test, err)
+
+        // Invoke the function and validate that it is equal
+        // to our starting MacIface
+        result, err := DecodeToMacIface(buf)
+        assert.Nil(test, err)
+        assert.Equal(test, entry.Mac, result.Mac)
+        assert.Equal(test, entry.Iface, result.Iface)
+    }
+}
+
 // Validate that an invalid db path errors out
 func TestInvalidDbPath(test *testing.T) {
 	aliases, err := LoadAliases("./dir/no/existy/_test_TestInvalidDbPath")
@@ -44,8 +67,14 @@ func TestInvalidDbPath(test *testing.T) {
 	assert.Nil(test, aliases)
 }
 
-// Tests which validate various parts of the DB functionality need
-// a common Setup and Teardown to create the db etc
+
+//////////////////////////////////////////////////////////////////////////////
+// Test suite: AliasDBTests
+//      Validate various parts of the DB functionality which needs
+//      a common Setup and Teardown to create the db instance
+//////////////////////////////////////////////////////////////////////////////
+// Define the test suite, and common members which can be accessed from each
+// test case within the suite.
 type AliasDBTests struct {
 	suite.Suite
 	dbName  string
@@ -67,7 +96,7 @@ func (suite *AliasDBTests) SetupTest() {
 	assert.Nil(suite.T(), err)
 }
 
-// The Teardown function closes the connection to the DB, and
+// The TearDown function closes the connection to the DB, and
 // removes the temporary file created for the same
 func (suite *AliasDBTests) TearDownTest() {
 	// Close the connection to the bolt db
@@ -86,8 +115,8 @@ func (suite *AliasDBTests) TestAddAlias() {
 	}{
 		{"one", "00:00:00:00:00:00", "eth0"},
 		{"two", "00:00:00:00:00:AA", "eth1"},
-		{"three", "00:00:00:00:11:00", ""},
-		{"four", "00:00:00:00:11:AA", ""},
+		{"thr", "00:00:00:00:11:00", ""},
+		{"fou", "00:00:00:00:11:AA", ""},
 	}
 
 	entryCount := 0
@@ -168,8 +197,8 @@ func (suite *AliasDBTests) TestGetAlias() {
     }{
         {"one", "00:00:00:00:00:00", "eth0"},
         {"two", "00:00:00:00:00:AA", "eth1"},
-        {"three", "00:00:00:00:11:00", ""},
-        {"four", "00:00:00:00:11:AA", ""},
+        {"thr", "00:00:00:00:11:00", ""},
+        {"fou", "00:00:00:00:11:AA", ""},
     }
 
     for _, entry := range TestCases {

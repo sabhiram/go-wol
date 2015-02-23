@@ -35,6 +35,14 @@ func DecodeToMacIface(buf *bytes.Buffer) (MacIface, error) {
 	return entry, err
 }
 
+// Takes a MAC and an Iface and encodes a gob with a MacIface entry
+func EncodeFromMacIface(mac, iface string) (*bytes.Buffer, error) {
+	buf := bytes.NewBuffer(nil)
+	entry := MacIface{mac, iface}
+	err := gob.NewEncoder(buf).Encode(entry)
+	return buf, err
+}
+
 // This function fetches a boltDb entity at a given `dbpath`. The db just
 // contains a default bucket called `Aliases` which is where the alias
 // entries are stored.
@@ -66,9 +74,8 @@ func (a *Aliases) Add(alias, mac, iface string) error {
 	defer a.mtx.Unlock()
 
 	// Create a buffer to store the encoded MAC, interface pair
-	buf := bytes.NewBuffer(nil)
-	entry := MacIface{Mac: mac, Iface: iface}
-	if err := gob.NewEncoder(buf).Encode(entry); err != nil {
+	buf, err := EncodeFromMacIface(mac, iface)
+	if err != nil {
 		return err
 	}
 
