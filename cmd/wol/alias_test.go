@@ -181,6 +181,10 @@ func (suite *AliasDBTests) TestGetAlias() {
         assert.Equal(suite.T(), entry.mac, mi.Mac)
         assert.Equal(suite.T(), entry.iface, mi.Iface)
     }
+
+    // Negative test case - aliases which do not exist
+    mi, err := suite.aliases.Get("foobar")
+    assert.NotNil(suite.T(), err)
 }
 
 // Group up all the test suites we wish to run and dispatch them here

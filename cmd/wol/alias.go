@@ -43,6 +43,7 @@ func LoadAliases(dbpath string) (*Aliases, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if err := db.Update(func(tx *bolt.Tx) error {
 		if _, lerr := tx.CreateBucketIfNotExists([]byte(MainBucketName)); err != nil {
 			return lerr
@@ -51,6 +52,7 @@ func LoadAliases(dbpath string) (*Aliases, error) {
 	}); err != nil {
 		return nil, err
 	}
+
 	return &Aliases{
 		mtx: &sync.Mutex{},
 		db:  db,
@@ -74,10 +76,7 @@ func (a *Aliases) Add(alias, mac, iface string) error {
 	// update it if it is already there
 	return a.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(MainBucketName))
-		if err := bucket.Put([]byte(alias), buf.Bytes()); err != nil {
-			return err
-		}
-		return nil
+		return bucket.Put([]byte(alias), buf.Bytes())
 	})
 }
 
@@ -88,10 +87,7 @@ func (a *Aliases) Del(alias string) error {
 
 	return a.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(MainBucketName))
-		if err := bucket.Delete([]byte(alias)); err != nil {
-			return err
-		}
-		return nil
+		return bucket.Delete([]byte(alias))
 	})
 }
 
