@@ -63,7 +63,7 @@ func NewMagicPacket(mac string) (*MagicPacket, error) {
 }
 
 // This function gets the address associated with an interface
-func getIpFromInterface(iface string) (*net.UDPAddr, error) {
+func GetIpFromInterface(iface string) (*net.UDPAddr, error) {
 	ief, err := net.InterfaceByName(iface)
 	if err != nil {
 		return nil, err
@@ -116,7 +116,7 @@ func SendMagicPacket(macAddr, bcastAddr, iface string) error {
 	var localAddr *net.UDPAddr
 	if iface != "" {
 		var err error
-		localAddr, err = getIpFromInterface(iface)
+		localAddr, err = GetIpFromInterface(iface)
 		if err != nil {
 			fmt.Printf("ERROR: %s\n", err.Error())
 			return errors.New("Unable to get address for interface " + iface)

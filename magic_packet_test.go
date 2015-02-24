@@ -2,6 +2,7 @@ package wol
 
 import (
 	"github.com/stretchr/testify/assert"
+	"net"
 	"testing"
 )
 
@@ -37,6 +38,22 @@ func TestNewMagicPacketNegative(test *testing.T) {
 
 	for _, t := range NegativeTestCases {
 		_, err := NewMagicPacket(t.mac)
-		assert.NotEqual(test, err, nil)
+		assert.NotNil(test, err)
+	}
+}
+
+func TestGetIpFromInterface(test *testing.T) {
+	interfaces, err := net.Interfaces()
+	assert.Nil(test, err)
+
+	// We can't actually enforce that we get a valid IP, but
+	// either the error or the pointer should be nil
+	for _, i := range interfaces {
+		addr, err := GetIpFromInterface(i.Name)
+		if err == nil {
+			assert.NotNil(test, addr)
+		} else {
+			assert.Nil(test, addr)
+		}
 	}
 }
