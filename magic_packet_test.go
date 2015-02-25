@@ -57,3 +57,19 @@ func TestGetIpFromInterface(test *testing.T) {
 		}
 	}
 }
+
+func TestGetIpFromInterfaceNegative(test *testing.T) {
+	// Test some fake interfaces
+	var NegativeTestCases = []struct {
+		iface string
+	}{
+		{"fake-interface-0"},
+		{"fake-interface-1"},
+	}
+
+	for _, t := range NegativeTestCases {
+		addr, err := GetIpFromInterface(t.iface)
+		assert.Nil(test, addr)
+		assert.NotNil(test, err)
+	}
+}

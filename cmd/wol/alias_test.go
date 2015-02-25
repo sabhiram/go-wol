@@ -7,10 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
-    "os"
-	"testing"
+	"os"
 	"regexp"
 	"runtime"
+	"testing"
 )
 
 // Helper regex to strip the preamble from the function name. This is
@@ -41,23 +41,23 @@ func TestDecodeToMacIface(test *testing.T) {
 
 // Validate the EncodeFromMacIface function
 func TestEncodeFromMacIface(test *testing.T) {
-    var TestCases = []MacIface{
-        {"00:00:00:00:00:00", "eth0"},
-        {"00:00:00:00:00:AA", ""},
-    }
+	var TestCases = []MacIface{
+		{"00:00:00:00:00:00", "eth0"},
+		{"00:00:00:00:00:AA", ""},
+	}
 
-    for _, entry := range TestCases {
-        // First encode the MacIface to a bunch of bytes
-        buf, err := EncodeFromMacIface(entry.Mac, entry.Iface)
-        assert.Nil(test, err)
+	for _, entry := range TestCases {
+		// First encode the MacIface to a bunch of bytes
+		buf, err := EncodeFromMacIface(entry.Mac, entry.Iface)
+		assert.Nil(test, err)
 
-        // Invoke the function and validate that it is equal
-        // to our starting MacIface
-        result, err := DecodeToMacIface(buf)
-        assert.Nil(test, err)
-        assert.Equal(test, entry.Mac, result.Mac)
-        assert.Equal(test, entry.Iface, result.Iface)
-    }
+		// Invoke the function and validate that it is equal
+		// to our starting MacIface
+		result, err := DecodeToMacIface(buf)
+		assert.Nil(test, err)
+		assert.Equal(test, entry.Mac, result.Mac)
+		assert.Equal(test, entry.Iface, result.Iface)
+	}
 }
 
 // Validate that an invalid db path errors out
@@ -66,7 +66,6 @@ func TestInvalidDbPath(test *testing.T) {
 	assert.NotNil(test, err)
 	assert.Nil(test, aliases)
 }
-
 
 //////////////////////////////////////////////////////////////////////////////
 // Test suite: AliasDBTests
@@ -190,30 +189,30 @@ func (suite *AliasDBTests) TestDeleteAlias() {
 
 // Adding a duplicate entry should overwrite the original one
 func (suite *AliasDBTests) TestGetAlias() {
-    var mi MacIface
+	var mi MacIface
 
-    var TestCases = []struct {
-        alias, mac, iface string
-    }{
-        {"one", "00:00:00:00:00:00", "eth0"},
-        {"two", "00:00:00:00:00:AA", "eth1"},
-        {"thr", "00:00:00:00:11:00", ""},
-        {"fou", "00:00:00:00:11:AA", ""},
-    }
+	var TestCases = []struct {
+		alias, mac, iface string
+	}{
+		{"one", "00:00:00:00:00:00", "eth0"},
+		{"two", "00:00:00:00:00:AA", "eth1"},
+		{"thr", "00:00:00:00:11:00", ""},
+		{"fou", "00:00:00:00:11:AA", ""},
+	}
 
-    for _, entry := range TestCases {
-        err := suite.aliases.Add(entry.alias, entry.mac, entry.iface)
-        assert.Nil(suite.T(), err)
+	for _, entry := range TestCases {
+		err := suite.aliases.Add(entry.alias, entry.mac, entry.iface)
+		assert.Nil(suite.T(), err)
 
-        mi, err = suite.aliases.Get(entry.alias)
-        assert.Nil(suite.T(), err)
-        assert.Equal(suite.T(), entry.mac, mi.Mac)
-        assert.Equal(suite.T(), entry.iface, mi.Iface)
-    }
+		mi, err = suite.aliases.Get(entry.alias)
+		assert.Nil(suite.T(), err)
+		assert.Equal(suite.T(), entry.mac, mi.Mac)
+		assert.Equal(suite.T(), entry.iface, mi.Iface)
+	}
 
-    // Negative test case - aliases which do not exist
-    mi, err := suite.aliases.Get("foobar")
-    assert.NotNil(suite.T(), err)
+	// Negative test case - aliases which do not exist
+	mi, err := suite.aliases.Get("foobar")
+	assert.NotNil(suite.T(), err)
 }
 
 // Group up all the test suites we wish to run and dispatch them here
