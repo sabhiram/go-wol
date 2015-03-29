@@ -53,7 +53,7 @@ func LoadAliases(dbpath string) (*Aliases, error) {
 	}
 
 	if err := db.Update(func(tx *bolt.Tx) error {
-		if _, lerr := tx.CreateBucketIfNotExists([]byte(MainBucketName)); err != nil {
+		if _, lerr := tx.CreateBucketIfNotExists([]byte(MainBucketName)); lerr != nil {
 			return lerr
 		}
 		return nil
