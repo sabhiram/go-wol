@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"encoding/gob"
 	"errors"
-	"github.com/boltdb/bolt"
+	"os"
+	"path"
 	"sync"
+
+	"github.com/boltdb/bolt"
 )
 
 const (
@@ -47,6 +50,12 @@ func EncodeFromMacIface(mac, iface string) (*bytes.Buffer, error) {
 // contains a default bucket called `Aliases` which is where the alias
 // entries are stored.
 func LoadAliases(dbpath string) (*Aliases, error) {
+
+	err := os.MkdirAll(path.Dir(dbpath), os.ModePerm)
+	if os.IsNotExist(err) {
+		return nil, err
+	}
+
 	db, err := bolt.Open(dbpath, 0660, nil)
 	if err != nil {
 		return nil, err

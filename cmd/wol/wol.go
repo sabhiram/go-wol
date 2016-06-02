@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+	"path"
 
 	"errors"
 
+	flags "github.com/jessevdk/go-flags"
 	wol "github.com/sabhiram/go-wol"
-
-	"github.com/jessevdk/go-flags"
 )
+
+const DBPath = "/.config/go-wol/bolt.db"
 
 var (
 	// Define holders for the cli arguments we wish to parse
@@ -145,8 +147,8 @@ func main() {
 		panic("Unable to determine current user. Exiting...")
 	}
 
-	// Load the list of aliases from the file at ~/.config/go-wol/bolt.db
-	aliases, err := LoadAliases(usr.HomeDir + "/.config/go-wol/bolt.db")
+	// Load the list of aliases from the file at DBPath
+	aliases, err := LoadAliases(path.Join(usr.HomeDir, DBPath))
 	if err != nil {
 		fmt.Printf("Failed to open WOL DB: %v\n", err)
 		panic("Unable to load user aliases! Exiting...")
