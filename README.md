@@ -21,7 +21,7 @@ It is important to remember that since this is typically sent over the [data lin
 ## Installation
 
 ```
-$go get github.com/sabhiram/go-wol
+$go get github.com/sabhiram/go-wol/cmd/wol
 $wol wake 08:BA:AD:F0:00:0D
 ```
 
@@ -45,11 +45,11 @@ With the following options (mostly apply to the wake command):
 ```
 
 Wake up a machine with mac address `00:11:22:aa:bb:cc`:
-    
+
     wol wake 00:11:22:aa:bb:cc
 
 Store an alias:
-    
+
     wol alias skynet 00:11:22:aa:bb:cc
 
 Note that when waking up a machine, the `wake` command pretty much exists for clarity. You can safely omit it (unless your alias name is `list`, `wake`, `alias` or `remove`).
@@ -60,11 +60,11 @@ Wake up a machine using an alias:
     wol skynet
 
 View all aliases and corresponding MAC addresses:
-    
+
     wol list
 
 Delete an alias:
-    
+
     wol remove skynet
 
 Store an alias to a MAC using a default interface:
@@ -97,7 +97,7 @@ The default Broadcast IP is `255.255.255.255` and the UDP Port is `9`. Typically
 
 #### Alias file
 
-The alias file is typically stored in the user's Home directory under the path of `~/.config/go-wol/aliases`. This is a very simple [`BoltDB`](https://github.com/boltdb/bolt) which reads a per-alias `Gob` made up of a MAC address and an optional preferred outbound interface. 
+The alias file is typically stored in the user's Home directory under the path of `~/.config/go-wol/aliases`. This is a very simple [`BoltDB`](https://github.com/boltdb/bolt) which reads a per-alias `Gob` made up of a MAC address and an optional preferred outbound interface.
 
 #### This is how `wol` expects MAC addresses to look
 
