@@ -1,5 +1,7 @@
 package main
 
+////////////////////////////////////////////////////////////////////////////////
+
 import (
 	"bytes"
 	"encoding/gob"
@@ -11,26 +13,23 @@ import (
 	bolt "github.com/coreos/bbolt"
 )
 
+////////////////////////////////////////////////////////////////////////////////
+
 const (
 	MainBucketName string = "Aliases"
 )
 
-// This struct holds a pointer to a mutex which will be acquired and released
-// as transactions are carried out on the `db`.
-type Aliases struct {
-	mtx *sync.Mutex
-	db  *bolt.DB
-}
+////////////////////////////////////////////////////////////////////////////////
 
-// This struct holds a MAC Address to wake up, along with an optionally
-// specified default interface to use when typically waking up said interface.
+// MacIface holds a MAC Address to wake up, along with an optionally specified
+// default interface to use when typically waking up said interface.
 type MacIface struct {
 	Mac   string
 	Iface string
 }
 
-// Takes a byte buffer and converts decodes it using the gob package
-// to a MacIface entry
+// DecodeToMacIface takes a byte buffer and converts decodes it using the gob
+// package to a MacIface entry.
 func DecodeToMacIface(buf *bytes.Buffer) (MacIface, error) {
 	var entry MacIface
 	decoder := gob.NewDecoder(buf)
@@ -38,7 +37,8 @@ func DecodeToMacIface(buf *bytes.Buffer) (MacIface, error) {
 	return entry, err
 }
 
-// Takes a MAC and an Iface and encodes a gob with a MacIface entry
+// EncodeFromMacIface takes a MAC and an Iface and encodes a gob with a MacIface
+// entry.
 func EncodeFromMacIface(mac, iface string) (*bytes.Buffer, error) {
 	buf := bytes.NewBuffer(nil)
 	entry := MacIface{mac, iface}
@@ -46,11 +46,19 @@ func EncodeFromMacIface(mac, iface string) (*bytes.Buffer, error) {
 	return buf, err
 }
 
-// This function fetches a boltDb entity at a given `dbpath`. The db just
-// contains a default bucket called `Aliases` which is where the alias
-// entries are stored.
-func LoadAliases(dbpath string) (*Aliases, error) {
+////////////////////////////////////////////////////////////////////////////////
 
+// Aliases holds a pointer to a mutex which will be acquired and released as
+// transactions are carried out on the `db`.
+type Aliases struct {
+	mtx *sync.Mutex
+	db  *bolt.DB
+}
+
+// LoadAliases fetches a boltDb entity at a given `dbpath`. The db just contains
+// a default bucket called `Aliases` which is where the alias entries are
+// stored.
+func LoadAliases(dbpath string) (*Aliases, error) {
 	err := os.MkdirAll(path.Dir(dbpath), os.ModePerm)
 	if os.IsNotExist(err) {
 		return nil, err
@@ -156,3 +164,5 @@ func (a *Aliases) Close() error {
 
 	return a.db.Close()
 }
+
+////////////////////////////////////////////////////////////////////////////////

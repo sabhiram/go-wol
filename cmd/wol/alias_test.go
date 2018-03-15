@@ -1,24 +1,29 @@
 package main
 
+////////////////////////////////////////////////////////////////////////////////
+
 import (
 	"bytes"
 	"encoding/gob"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
-
 	"os"
 	"regexp"
 	"runtime"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
+
+////////////////////////////////////////////////////////////////////////////////
 
 // Helper regex to strip the preamble from the function name. This is
 // used to create a temp db file per test (based on the test name).
 var RE_stripFnPreamble = regexp.MustCompile(`^.*\.(.*)$`)
 
+////////////////////////////////////////////////////////////////////////////////
+
 // Validate the DecodeToMacIface function
-func TestDecodeToMacIface(test *testing.T) {
+func TestDecodeToMacIface(t *testing.T) {
 	var TestCases = []MacIface{
 		{"00:00:00:00:00:00", ""},
 		{"00:00:00:00:00:AA", "eth1"},
@@ -28,19 +33,19 @@ func TestDecodeToMacIface(test *testing.T) {
 		// First encode the MacIface to a bunch of bytes
 		buf := bytes.NewBuffer(nil)
 		err := gob.NewEncoder(buf).Encode(entry)
-		assert.Nil(test, err)
+		assert.Nil(t, err)
 
 		// Invoke the function and validate that it is equal
 		// to our starting MacIface
 		result, err := DecodeToMacIface(buf)
-		assert.Nil(test, err)
-		assert.Equal(test, entry.Mac, result.Mac)
-		assert.Equal(test, entry.Iface, result.Iface)
+		assert.Nil(t, err)
+		assert.Equal(t, entry.Mac, result.Mac)
+		assert.Equal(t, entry.Iface, result.Iface)
 	}
 }
 
 // Validate the EncodeFromMacIface function
-func TestEncodeFromMacIface(test *testing.T) {
+func TestEncodeFromMacIface(t *testing.T) {
 	var TestCases = []MacIface{
 		{"00:00:00:00:00:00", "eth0"},
 		{"00:00:00:00:00:AA", ""},
@@ -49,34 +54,28 @@ func TestEncodeFromMacIface(test *testing.T) {
 	for _, entry := range TestCases {
 		// First encode the MacIface to a bunch of bytes
 		buf, err := EncodeFromMacIface(entry.Mac, entry.Iface)
-		assert.Nil(test, err)
+		assert.Nil(t, err)
 
 		// Invoke the function and validate that it is equal
 		// to our starting MacIface
 		result, err := DecodeToMacIface(buf)
-		assert.Nil(test, err)
-		assert.Equal(test, entry.Mac, result.Mac)
-		assert.Equal(test, entry.Iface, result.Iface)
+		assert.Nil(t, err)
+		assert.Equal(t, entry.Mac, result.Mac)
+		assert.Equal(t, entry.Iface, result.Iface)
 	}
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// Test suite: AliasDBTests
-//      Validate various parts of the DB functionality which needs
-//      a common Setup and Teardown to create the db instance
-//////////////////////////////////////////////////////////////////////////////
-// Define the test suite, and common members which can be accessed from each
-// test case within the suite.
+////////////////////////////////////////////////////////////////////////////////
+
 type AliasDBTests struct {
 	suite.Suite
 	dbName  string
 	aliases *Aliases
 }
 
-// The Setup function is responsible for creating a temporary
-// BoltDB to test against. Then, it returns the path to the
-// db it creates so we can clean this up at teardown time (along
-// with a pointer to the db instance).
+// The Setup function is responsible for creating a temporary BoltDB to test
+// against. Then, it returns the path to the db it creates so we can clean
+// this up at teardown time (along with a pointer to the db instance).
 func (suite *AliasDBTests) SetupTest() {
 	pc, _, _, ok := runtime.Caller(1)
 	if ok {
@@ -208,7 +207,11 @@ func (suite *AliasDBTests) TestGetAlias() {
 	assert.NotNil(suite.T(), err)
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 // Group up all the test suites we wish to run and dispatch them here
 func TestRunAllSuites(t *testing.T) {
 	suite.Run(t, new(AliasDBTests))
 }
+
+////////////////////////////////////////////////////////////////////////////////

@@ -1,16 +1,20 @@
 package main
 
+////////////////////////////////////////////////////////////////////////////////
+
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/user"
 	"path"
 
-	"errors"
-
 	flags "github.com/jessevdk/go-flags"
+
 	wol "github.com/sabhiram/go-wol"
 )
+
+////////////////////////////////////////////////////////////////////////////////
 
 const DBPath = "/.config/go-wol/bolt.db"
 
@@ -24,6 +28,8 @@ var (
 		UDPPort            string `short:"p" long:"port" default:"9"`
 	}
 )
+
+////////////////////////////////////////////////////////////////////////////////
 
 // Run the alias command
 func runAliasCommand(args []string, aliases *Aliases) error {
@@ -127,6 +133,8 @@ func runCommand(cmd string, args []string, aliases *Aliases) error {
 	return nil
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 // Helper function to dump the usage and print an error if specified,
 // it also returns the exit code requested to the function (saves me a line)
 func printUsageGetExitCode(s string, e int) int {
@@ -195,3 +203,5 @@ func main() {
 	}
 	os.Exit(exitCode)
 }
+
+////////////////////////////////////////////////////////////////////////////////

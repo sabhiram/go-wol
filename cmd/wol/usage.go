@@ -1,5 +1,7 @@
 package main
 
+////////////////////////////////////////////////////////////////////////////////
+
 import (
 	"fmt"
 	"strings"
@@ -7,29 +9,32 @@ import (
 	"github.com/sabhiram/go-colorize"
 )
 
-// List of strings which contain allowed commands
-var ValidCommands = []struct {
-	name, description string
-}{
-	{`wake`, `wakes up a machine by mac address or alias`},
-	{`list`, `lists all mac addresses and their aliases`},
-	{`alias`, `stores an alias to a mac address`},
-	{`remove`, `removes an alias or a mac address`},
-}
+////////////////////////////////////////////////////////////////////////////////
 
-// List of options which wol supports
-var ValidOptions = []struct {
-	short, long, description string
-}{
-	{`v`, `version`, `prints the application version`},
-	{`h`, `help`, `prints this help menu`},
-	{`p`, `port`, `udp port to send bcast packet to`},
-	{`b`, `bcast`, `broadcast IP to send packet to`},
-	{`i`, `interface`, `outbound interface to broadcast using`},
-}
+var (
+	// List of strings which contain allowed commands
+	ValidCommands = []struct {
+		name, description string
+	}{
+		{`wake`, `wakes up a machine by mac address or alias`},
+		{`list`, `lists all mac addresses and their aliases`},
+		{`alias`, `stores an alias to a mac address`},
+		{`remove`, `removes an alias or a mac address`},
+	}
 
-// Usage string for wol
-var UsageString = `Usage:
+	// List of options which wol supports
+	ValidOptions = []struct {
+		short, long, description string
+	}{
+		{`v`, `version`, `prints the application version`},
+		{`h`, `help`, `prints this help menu`},
+		{`p`, `port`, `udp port to send bcast packet to`},
+		{`b`, `bcast`, `broadcast IP to send packet to`},
+		{`i`, `interface`, `outbound interface to broadcast using`},
+	}
+
+	// Usage string for wol
+	UsageString = `Usage:
 
     To wake up a machine:
         <cyan>wol</cyan> [<options>] <yellow>wake</yellow> <mac address | alias> <optional interface>
@@ -57,6 +62,9 @@ Version:
     <white>%s</white>
 
 `
+)
+
+////////////////////////////////////////////////////////////////////////////////
 
 // Build a command string from the above valid ones
 func getAllCommands() string {
@@ -91,3 +99,5 @@ func isValidCommand(s string) bool {
 	}
 	return false
 }
+
+////////////////////////////////////////////////////////////////////////////////
