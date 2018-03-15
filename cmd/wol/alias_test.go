@@ -60,13 +60,6 @@ func TestEncodeFromMacIface(test *testing.T) {
 	}
 }
 
-// Validate that an invalid db path errors out
-func TestInvalidDbPath(test *testing.T) {
-	aliases, err := LoadAliases("./dir/no/existy/_test_TestInvalidDbPath")
-	assert.NotNil(test, err)
-	assert.Nil(test, aliases)
-}
-
 //////////////////////////////////////////////////////////////////////////////
 // Test suite: AliasDBTests
 //      Validate various parts of the DB functionality which needs

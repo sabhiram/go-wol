@@ -8,7 +8,7 @@ import (
 	"path"
 	"sync"
 
-	"github.com/boltdb/bolt"
+	bolt "github.com/coreos/bbolt"
 )
 
 const (
