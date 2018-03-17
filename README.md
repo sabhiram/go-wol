@@ -21,8 +21,8 @@ It is important to remember that since this is typically sent over the [data lin
 ## Installation
 
 ```
-$go get github.com/sabhiram/go-wol/cmd/wol
-$wol wake 08:BA:AD:F0:00:0D
+go get github.com/sabhiram/go-wol/cmd/wol
+wol wake 08:BA:AD:F0:00:0D
 ```
 
 ## Usage
@@ -117,5 +117,6 @@ To run the tests:
 
 ## Contributors:
 
-Thanks to:
 1. @traetox for helping adding the optional outbound interface for MagicPackets, and swapping out the `Gob` written to disk for a more elegant `BoltDB` solution.
+2. @mengzhuo for fixing #7.
+3. @gnanderson for updating boltdb.
