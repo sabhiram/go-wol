@@ -136,14 +136,12 @@ func SendMagicPacket(macAddr, bcastAddr, iface string) error {
 	defer connection.Close()
 
 	// Write the bytes of the MagicPacket to the connection
-	bytesWritten, err := connection.Write(buf.Bytes())
+	n, err := connection.Write(buf.Bytes())
 	if err != nil {
 		return err
-	} else if bytesWritten != 102 {
-		fmt.Printf("Warning: %d bytes written, %d expected!\n", bytesWritten, 102)
+	} else if n != 102 {
+		fmt.Printf("Warning: %d bytes written, %d expected!\n", n, 102)
 	}
 
 	return nil
 }
-
-////////////////////////////////////////////////////////////////////////////////

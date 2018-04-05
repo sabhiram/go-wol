@@ -167,16 +167,16 @@ func main() {
 	parser := flags.NewParser(&Options, flags.Default & ^flags.HelpFlag)
 	args, err = parser.Parse()
 
-	exitCode := 0
+	ec := 0
 	switch {
 
 	// Parse Error, print usage
 	case err != nil:
-		exitCode = printUsageGetExitCode("", 1)
+		ec = printUsageGetExitCode("", 1)
 
 	// No arguments, or help requested, print usage
 	case len(os.Args) == 1 || Options.Help:
-		exitCode = printUsageGetExitCode("", 0)
+		ec = printUsageGetExitCode("", 0)
 
 	// "--version" requested
 	case Options.Version:
@@ -184,7 +184,7 @@ func main() {
 
 	// Make sure we are being asked to run a something
 	case len(args) == 0:
-		exitCode = printUsageGetExitCode("No command specified, see usage:\n", 1)
+		ec = printUsageGetExitCode("No command specified, see usage:\n", 1)
 
 	// All other cases go here
 	case true:
@@ -197,11 +197,9 @@ func main() {
 
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
-			exitCode = 1
+			ec = 1
 		}
 
 	}
-	os.Exit(exitCode)
+	os.Exit(ec)
 }
-
-////////////////////////////////////////////////////////////////////////////////

@@ -213,5 +213,3 @@ func (suite *AliasDBTests) TestGetAlias() {
 func TestRunAllSuites(t *testing.T) {
 	suite.Run(t, new(AliasDBTests))
 }
-
-////////////////////////////////////////////////////////////////////////////////
