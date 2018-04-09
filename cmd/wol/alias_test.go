@@ -22,7 +22,7 @@ var RE_stripFnPreamble = regexp.MustCompile(`^.*\.(.*)$`)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Validate the DecodeToMacIface function
+// Validate the DecodeToMacIface function.
 func TestDecodeToMacIface(t *testing.T) {
 	var TestCases = []MacIface{
 		{"00:00:00:00:00:00", ""},
@@ -30,13 +30,11 @@ func TestDecodeToMacIface(t *testing.T) {
 	}
 
 	for _, entry := range TestCases {
-		// First encode the MacIface to a bunch of bytes
+		// First encode the MacIface to a bunch of bytes.
 		buf := bytes.NewBuffer(nil)
 		err := gob.NewEncoder(buf).Encode(entry)
 		assert.Nil(t, err)
 
-		// Invoke the function and validate that it is equal
-		// to our starting MacIface
 		result, err := DecodeToMacIface(buf)
 		assert.Nil(t, err)
 		assert.Equal(t, entry.Mac, result.Mac)
@@ -44,7 +42,7 @@ func TestDecodeToMacIface(t *testing.T) {
 	}
 }
 
-// Validate the EncodeFromMacIface function
+// Validate the EncodeFromMacIface function.
 func TestEncodeFromMacIface(t *testing.T) {
 	var TestCases = []MacIface{
 		{"00:00:00:00:00:00", "eth0"},
@@ -52,12 +50,10 @@ func TestEncodeFromMacIface(t *testing.T) {
 	}
 
 	for _, entry := range TestCases {
-		// First encode the MacIface to a bunch of bytes
+		// First encode the MacIface to a bunch of bytes.
 		buf, err := EncodeFromMacIface(entry.Mac, entry.Iface)
 		assert.Nil(t, err)
 
-		// Invoke the function and validate that it is equal
-		// to our starting MacIface
 		result, err := DecodeToMacIface(buf)
 		assert.Nil(t, err)
 		assert.Equal(t, entry.Mac, result.Mac)
@@ -87,19 +83,19 @@ func (suite *AliasDBTests) SetupTest() {
 	assert.Nil(suite.T(), err)
 }
 
-// The TearDown function closes the connection to the DB, and
-// removes the temporary file created for the same
+// The TearDown function closes the connection to the DB, and removes the
+// temporary file created for the same.
 func (suite *AliasDBTests) TearDownTest() {
-	// Close the connection to the bolt db
+	// Close the connection to the bolt db.
 	err := suite.aliases.Close()
 	assert.Nil(suite.T(), err)
 
-	// Remove the temporary test db
+	// Remove the temporary test db.
 	err = os.Remove("./" + suite.dbName)
 	assert.Nil(suite.T(), err)
 }
 
-// Validates the Aliases Add function
+// Validates the Aliases `Add` function.
 func (suite *AliasDBTests) TestAddAlias() {
 	var TestCases = []struct {
 		alias, mac, iface string
@@ -112,29 +108,29 @@ func (suite *AliasDBTests) TestAddAlias() {
 
 	entryCount := 0
 	for _, entry := range TestCases {
-		// Add the alias to the db
+		// Add the alias to the db.
 		err := suite.aliases.Add(entry.alias, entry.mac, entry.iface)
 		assert.Nil(suite.T(), err)
 		entryCount += 1
 
-		// Validate that we have "entryCount" number of aliases added
+		// Validate that we have "entryCount" number of aliases added.
 		list, err := suite.aliases.List()
 		assert.Nil(suite.T(), err)
 		assert.Equal(suite.T(), entryCount, len(list))
 
 		// Check to ensure that the current map contains the key we
-		// just added to the db
+		// just added to the db.
 		assert.Equal(suite.T(), entry.mac, list[entry.alias].Mac)
 		assert.Equal(suite.T(), entry.iface, list[entry.alias].Iface)
 	}
 }
 
-// Adding a duplicate entry should overwrite the original one
+// Adding a duplicate entry should overwrite the original one.
 func (suite *AliasDBTests) TestAddDuplicateAlias() {
 	err := suite.aliases.Add("test01", "00:11:22:33:44:55", "eth0")
 	assert.Nil(suite.T(), err)
 
-	// Validate the first entry exists
+	// Validate the first entry exists.
 	list, err := suite.aliases.List()
 	assert.Nil(suite.T(), err)
 	assert.Equal(suite.T(), "00:11:22:33:44:55", list["test01"].Mac)
@@ -149,7 +145,7 @@ func (suite *AliasDBTests) TestAddDuplicateAlias() {
 	assert.Equal(suite.T(), "", list["test01"].Iface)
 }
 
-// Adding a duplicate entry should overwrite the original one
+// Adding a duplicate entry should overwrite the original one.
 func (suite *AliasDBTests) TestDeleteAlias() {
 	var err error
 	var list map[string]MacIface
@@ -159,19 +155,17 @@ func (suite *AliasDBTests) TestDeleteAlias() {
 	err = suite.aliases.Add("test02", "00:11:22:33:44:66", "")
 	assert.Nil(suite.T(), err)
 
-	// Validate that we have two items in the db
+	// Validate that we have two items in the db.
 	list, err = suite.aliases.List()
 	assert.Nil(suite.T(), err)
 	assert.Equal(suite.T(), 2, len(list))
 
-	// Remove test01
 	err = suite.aliases.Del("test01")
 	assert.Nil(suite.T(), err)
 	list, err = suite.aliases.List()
 	assert.Nil(suite.T(), err)
 	assert.Equal(suite.T(), 1, len(list))
 
-	// Remove test02
 	err = suite.aliases.Del("test02")
 	assert.Nil(suite.T(), err)
 	list, err = suite.aliases.List()
@@ -179,7 +173,7 @@ func (suite *AliasDBTests) TestDeleteAlias() {
 	assert.Equal(suite.T(), 0, len(list))
 }
 
-// Adding a duplicate entry should overwrite the original one
+// Adding a duplicate entry should overwrite the original one.
 func (suite *AliasDBTests) TestGetAlias() {
 	var mi MacIface
 
@@ -202,14 +196,14 @@ func (suite *AliasDBTests) TestGetAlias() {
 		assert.Equal(suite.T(), entry.iface, mi.Iface)
 	}
 
-	// Negative test case - aliases which do not exist
+	// Negative test case - aliases which do not exist.
 	mi, err := suite.aliases.Get("foobar")
 	assert.NotNil(suite.T(), err)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Group up all the test suites we wish to run and dispatch them here
+// Group up all the test suites we wish to run and dispatch them here.
 func TestRunAllSuites(t *testing.T) {
 	suite.Run(t, new(AliasDBTests))
 }

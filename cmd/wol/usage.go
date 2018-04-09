@@ -4,15 +4,15 @@ package main
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/sabhiram/go-colorize"
+
+	wol "github.com/sabhiram/go-wol"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
 
 var (
-	// List of strings which contain allowed commands
 	ValidCommands = []struct {
 		name, description string
 	}{
@@ -22,7 +22,6 @@ var (
 		{`remove`, `removes an alias or a mac address`},
 	}
 
-	// List of options which wol supports
 	ValidOptions = []struct {
 		short, long, description string
 	}{
@@ -33,7 +32,6 @@ var (
 		{`i`, `interface`, `outbound interface to broadcast using`},
 	}
 
-	// Usage string for wol
 	UsageString = `Usage:
 
     To wake up a machine:
@@ -66,7 +64,7 @@ Version:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Build a command string from the above valid ones
+// Build a command string from the above valid ones.
 func getAllCommands() string {
 	commands := ""
 	for _, c := range ValidCommands {
@@ -75,7 +73,7 @@ func getAllCommands() string {
 	return commands
 }
 
-// Build an option string from the above valid ones
+// Build an option string from the above valid ones.
 func getAllOptions() string {
 	options := ""
 	for _, o := range ValidOptions {
@@ -84,18 +82,7 @@ func getAllOptions() string {
 	return options
 }
 
-// Returns the Usage string for this application
+// Returns the Usage string for this application.
 func getAppUsageString() string {
-	return colorize.Colorize(fmt.Sprintf(UsageString, getAllCommands(), getAllOptions(), Version))
-}
-
-// Returns true if the ValidCommands struct contains an entry with the
-// input string "s"
-func isValidCommand(s string) bool {
-	for _, c := range ValidCommands {
-		if strings.ToLower(s) == c.name {
-			return true
-		}
-	}
-	return false
+	return colorize.Colorize(fmt.Sprintf(UsageString, getAllCommands(), getAllOptions(), wol.Version))
 }

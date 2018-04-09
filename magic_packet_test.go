@@ -51,8 +51,8 @@ func TestGetIpFromInterface(t *testing.T) {
 	interfaces, err := net.Interfaces()
 	assert.Nil(t, err)
 
-	// We can't actually enforce that we get a valid IP, but
-	// either the error or the pointer should be nil
+	// We can't actually enforce that we get a valid IP, but either the error
+	// or the pointer should be nil.
 	for _, i := range interfaces {
 		addr, err := GetIpFromInterface(i.Name)
 		if err == nil {
@@ -64,7 +64,7 @@ func TestGetIpFromInterface(t *testing.T) {
 }
 
 func TestGetIpFromInterfaceNegative(t *testing.T) {
-	// Test some fake interfaces
+	// Test some fake interfaces.
 	var NegativeTestCases = []struct {
 		iface string
 	}{

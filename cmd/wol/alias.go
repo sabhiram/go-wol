@@ -5,7 +5,7 @@ package main
 import (
 	"bytes"
 	"encoding/gob"
-	"errors"
+	"fmt"
 	"os"
 	"path"
 	"sync"
@@ -85,26 +85,26 @@ func LoadAliases(dbpath string) (*Aliases, error) {
 }
 
 // Add updates an alias entry or adds a new alias entry. If the alias already
-// exists it is just overwritten
+// exists it is just overwritten.
 func (a *Aliases) Add(alias, mac, iface string) error {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
-	// Create a buffer to store the encoded MAC, interface pair
+	// Create a buffer to store the encoded MAC, interface pair.
 	buf, err := EncodeFromMacIface(mac, iface)
 	if err != nil {
 		return err
 	}
 
-	// We don't have to worry about the key existing, as we will just
-	// update it if it is already there
+	// We don't have to worry about the key existing, as we will update it
+	// provided it exists.
 	return a.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(MainBucketName))
 		return bucket.Put([]byte(alias), buf.Bytes())
 	})
 }
 
-// Del removes an alias from the store based on the alias string
+// Del removes an alias from the store based on the alias string.
 func (a *Aliases) Del(alias string) error {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
@@ -115,7 +115,7 @@ func (a *Aliases) Del(alias string) error {
 	})
 }
 
-// Get retrieves a MacIface from the store based on an alias string
+// Get retrieves a MacIface from the store based on an alias string.
 func (a *Aliases) Get(alias string) (MacIface, error) {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
@@ -127,7 +127,7 @@ func (a *Aliases) Get(alias string) (MacIface, error) {
 		bucket := tx.Bucket([]byte(MainBucketName))
 		value := bucket.Get([]byte(alias))
 		if value == nil {
-			return errors.New("Alias not found in db")
+			return fmt.Errorf("alias (%s) not found in db", alias)
 		}
 
 		entry, err = DecodeToMacIface(bytes.NewBuffer(value))
@@ -136,7 +136,7 @@ func (a *Aliases) Get(alias string) (MacIface, error) {
 	return entry, err
 }
 
-// List returns a map containing all alias MacIface pairs
+// List returns a map containing all alias MacIface pairs.
 func (a *Aliases) List() (map[string]MacIface, error) {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
@@ -157,7 +157,7 @@ func (a *Aliases) List() (map[string]MacIface, error) {
 	return aliasMap, err
 }
 
-// Close closes the alias store
+// Close closes the alias store.
 func (a *Aliases) Close() error {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
