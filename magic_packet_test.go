@@ -3,7 +3,6 @@ package wol
 ////////////////////////////////////////////////////////////////////////////////
 
 import (
-	"net"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,16 +11,14 @@ import (
 ////////////////////////////////////////////////////////////////////////////////
 
 func TestNewMagicPacket(t *testing.T) {
-	var PositiveTestCases = []struct {
+	for _, tc := range []struct {
 		mac      string
 		expected MACAddress
 	}{
 		{"00:00:00:00:00:00", MACAddress{0, 0, 0, 0, 0, 0}},
 		{"00:ff:01:03:00:00", MACAddress{0, 255, 1, 3, 0, 0}},
 		{"00-ff-01-03-00-00", MACAddress{0, 255, 1, 3, 0, 0}},
-	}
-
-	for _, tc := range PositiveTestCases {
+	} {
 		pkt, err := New(tc.mac)
 		for _, v := range pkt.header {
 			assert.Equal(t, int(v), 255)
@@ -34,47 +31,39 @@ func TestNewMagicPacket(t *testing.T) {
 }
 
 func TestNewMagicPacketNegative(t *testing.T) {
-	var NegativeTestCases = []struct {
+	for _, tc := range []struct {
 		mac string
 	}{
 		{"00x00:00:00:00:00"},
 		{"00:00:Z0:00:00:00"},
-	}
-
-	for _, tc := range NegativeTestCases {
+		{"01:23:45:67:89:ab:cd:ef"},
+		{"01:23:45:67:89:ab:cd:ef:00:00:01:23:45:67:89:ab:cd:ef:00:00"},
+		{"01-23-45-67-89-ab-cd-ef"},
+		{"01-23-45-67-89-ab-cd-ef-00-00-01-23-45-67-89-ab-cd-ef-00-00"},
+		{"0123.4567.89ab"},
+		{"0123.4567.89ab.cdef"},
+		{"0123.4567.89ab.cdef.0000.0123.4567.89ab.cdef.0000"},
+	} {
 		_, err := New(tc.mac)
 		assert.NotNil(t, err)
 	}
 }
 
-func TestGetIPFromInterface(t *testing.T) {
-	interfaces, err := net.Interfaces()
-	assert.Nil(t, err)
-
-	// We can't actually enforce that we get a valid IP, but either the error
-	// or the pointer should be nil.
-	for _, i := range interfaces {
-		addr, err := GetIPFromInterface(i.Name)
-		if err == nil {
-			assert.NotNil(t, addr)
-		} else {
-			assert.Nil(t, addr)
-		}
-	}
-}
-
-func TestGetIPFromInterfaceNegative(t *testing.T) {
-	// Test some fake interfaces.
-	var NegativeTestCases = []struct {
-		iface string
+func TestMagicPacketMarshal(t *testing.T) {
+	for _, tc := range []struct {
+		mac   string
+		count int
 	}{
-		{"fake-interface-0"},
-		{"fake-interface-1"},
-	}
+		{"00:00:00:00:00:00", 102},
+		{"00:ff:01:03:00:00", 102},
+		{"00-ff-01-03-00-00", 102},
+	} {
+		pkt, err := New(tc.mac)
+		assert.Equal(t, err, nil)
 
-	for _, tc := range NegativeTestCases {
-		addr, err := GetIPFromInterface(tc.iface)
-		assert.Nil(t, addr)
-		assert.NotNil(t, err)
+		bs, err := pkt.Marshal()
+		assert.Equal(t, err, nil)
+
+		assert.Equal(t, len(bs), tc.count)
 	}
 }
