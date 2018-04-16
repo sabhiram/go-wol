@@ -5,9 +5,9 @@ package wol
 // Version: 1.0.4
 
 const (
-    Major = 1
-    Minor = 0
-    Patch = 4
+	Major = 1
+	Minor = 0
+	Patch = 4
 
-    Version = "1.0.4"
+	Version = "1.0.4"
 )
