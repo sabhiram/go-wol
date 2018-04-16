@@ -14,7 +14,7 @@ import (
 
 var (
 	delims = ":-"
-	re_MAC = regexp.MustCompile(`^([0-9a-fA-F]{2}[` + delims + `]){5}([0-9a-fA-F]{2})$`)
+	reMAC  = regexp.MustCompile(`^([0-9a-fA-F]{2}[` + delims + `]){5}([0-9a-fA-F]{2})$`)
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ func New(mac string) (*MagicPacket, error) {
 
 	// We only support 6 byte MAC addresses since it is much harder to use the
 	// binary.Write(...) interface when the size of the MagicPacket is dynamic.
-	if !re_MAC.MatchString(mac) {
+	if !reMAC.MatchString(mac) {
 		return nil, fmt.Errorf("invalid mac-address %s", mac)
 	}
 
@@ -65,8 +65,8 @@ func New(mac string) (*MagicPacket, error) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// GetIpFromInterface returns a `*net.UDPAddr` from a network interface name.
-func GetIpFromInterface(iface string) (*net.UDPAddr, error) {
+// GetIPFromInterface returns a `*net.UDPAddr` from a network interface name.
+func GetIPFromInterface(iface string) (*net.UDPAddr, error) {
 	ief, err := net.InterfaceByName(iface)
 	if err != nil {
 		return nil, err
@@ -120,7 +120,7 @@ func SendMagicPacket(macAddr, bcastAddr, iface string) error {
 	var localAddr *net.UDPAddr
 	if iface != "" {
 		var err error
-		localAddr, err = GetIpFromInterface(iface)
+		localAddr, err = GetIPFromInterface(iface)
 		if err != nil {
 			return err
 		}

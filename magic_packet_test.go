@@ -47,14 +47,14 @@ func TestNewMagicPacketNegative(t *testing.T) {
 	}
 }
 
-func TestGetIpFromInterface(t *testing.T) {
+func TestGetIPFromInterface(t *testing.T) {
 	interfaces, err := net.Interfaces()
 	assert.Nil(t, err)
 
 	// We can't actually enforce that we get a valid IP, but either the error
 	// or the pointer should be nil.
 	for _, i := range interfaces {
-		addr, err := GetIpFromInterface(i.Name)
+		addr, err := GetIPFromInterface(i.Name)
 		if err == nil {
 			assert.NotNil(t, addr)
 		} else {
@@ -63,7 +63,7 @@ func TestGetIpFromInterface(t *testing.T) {
 	}
 }
 
-func TestGetIpFromInterfaceNegative(t *testing.T) {
+func TestGetIPFromInterfaceNegative(t *testing.T) {
 	// Test some fake interfaces.
 	var NegativeTestCases = []struct {
 		iface string
@@ -73,7 +73,7 @@ func TestGetIpFromInterfaceNegative(t *testing.T) {
 	}
 
 	for _, tc := range NegativeTestCases {
-		addr, err := GetIpFromInterface(tc.iface)
+		addr, err := GetIPFromInterface(tc.iface)
 		assert.Nil(t, addr)
 		assert.NotNil(t, err)
 	}
