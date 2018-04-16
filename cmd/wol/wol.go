@@ -17,11 +17,13 @@ import (
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const DBPath = "/.config/go-wol/bolt.db"
+const (
+	dbPath = "/.config/go-wol/bolt.db"
+)
 
 var (
 	// Define holders for the cli arguments we wish to parse.
-	Options struct {
+	cliFlags struct {
 		Version            bool   `short:"v" long:"version"`
 		Help               bool   `short:"h" long:"help"`
 		BroadcastInterface string `short:"i" long:"interface" default:""`
@@ -93,11 +95,11 @@ func wakeCmd(args []string, aliases *Aliases) error {
 	}
 
 	// Always use the interface specified in the command line, if it exists.
-	if Options.BroadcastInterface != "" {
-		bcastInterface = Options.BroadcastInterface
+	if cliFlags.BroadcastInterface != "" {
+		bcastInterface = cliFlags.BroadcastInterface
 	}
 
-	err = wol.SendMagicPacket(macAddr, Options.BroadcastIP+":"+Options.UDPPort, bcastInterface)
+	err = wol.SendMagicPacket(macAddr, cliFlags.BroadcastIP+":"+cliFlags.UDPPort, bcastInterface)
 	if err != nil {
 		return err
 	}
@@ -144,13 +146,13 @@ func main() {
 	usr, err := user.Current()
 	fatalOnError(err)
 
-	// Load the list of aliases from the file at DBPath.
-	aliases, err := LoadAliases(path.Join(usr.HomeDir, DBPath))
+	// Load the list of aliases from the file at dbPath.
+	aliases, err := LoadAliases(path.Join(usr.HomeDir, dbPath))
 	fatalOnError(err)
 	defer aliases.Close()
 
 	// Parse arguments which might get passed to "wol".
-	parser := flags.NewParser(&Options, flags.Default & ^flags.HelpFlag)
+	parser := flags.NewParser(&cliFlags, flags.Default & ^flags.HelpFlag)
 	args, err = parser.Parse()
 
 	ec := 0
@@ -161,11 +163,11 @@ func main() {
 		ec = printUsageGetExitCode("", 1)
 
 	// No arguments, or help requested, print usage.
-	case len(os.Args) == 1 || Options.Help:
+	case len(os.Args) == 1 || cliFlags.Help:
 		ec = printUsageGetExitCode("", 0)
 
 	// "--version" requested.
-	case Options.Version:
+	case cliFlags.Version:
 		fmt.Printf("%s\n", wol.Version)
 
 	// Make sure we are being asked to run a something.

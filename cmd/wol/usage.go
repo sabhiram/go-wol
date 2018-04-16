@@ -13,7 +13,7 @@ import (
 ////////////////////////////////////////////////////////////////////////////////
 
 var (
-	ValidCommands = []struct {
+	validCommands = []struct {
 		name, description string
 	}{
 		{`wake`, `wakes up a machine by mac address or alias`},
@@ -22,7 +22,7 @@ var (
 		{`remove`, `removes an alias or a mac address`},
 	}
 
-	ValidOptions = []struct {
+	validOptions = []struct {
 		short, long, description string
 	}{
 		{`v`, `version`, `prints the application version`},
@@ -32,7 +32,7 @@ var (
 		{`i`, `interface`, `outbound interface to broadcast using`},
 	}
 
-	UsageString = `Usage:
+	usageString = `Usage:
 
     To wake up a machine:
         <cyan>wol</cyan> [<options>] <yellow>wake</yellow> <mac address | alias> <optional interface>
@@ -67,7 +67,7 @@ Version:
 // Build a command string from the above valid ones.
 func getAllCommands() string {
 	commands := ""
-	for _, c := range ValidCommands {
+	for _, c := range validCommands {
 		commands += fmt.Sprintf("    <yellow>%-16s</yellow> %s\n", c.name, c.description)
 	}
 	return commands
@@ -76,7 +76,7 @@ func getAllCommands() string {
 // Build an option string from the above valid ones.
 func getAllOptions() string {
 	options := ""
-	for _, o := range ValidOptions {
+	for _, o := range validOptions {
 		options += fmt.Sprintf("    <yellow>-%s --%-8s</yellow>    %s\n", o.short, o.long, o.description)
 	}
 	return options
@@ -84,5 +84,5 @@ func getAllOptions() string {
 
 // Returns the Usage string for this application.
 func getAppUsageString() string {
-	return colorize.Colorize(fmt.Sprintf(UsageString, getAllCommands(), getAllOptions(), wol.Version))
+	return colorize.Colorize(fmt.Sprintf(usageString, getAllCommands(), getAllOptions(), wol.Version))
 }

@@ -16,7 +16,7 @@ import (
 ////////////////////////////////////////////////////////////////////////////////
 
 const (
-	MainBucketName string = "Aliases"
+	bucketName = "Aliases"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ func LoadAliases(dbpath string) (*Aliases, error) {
 	}
 
 	if err := db.Update(func(tx *bolt.Tx) error {
-		if _, lerr := tx.CreateBucketIfNotExists([]byte(MainBucketName)); lerr != nil {
+		if _, lerr := tx.CreateBucketIfNotExists([]byte(bucketName)); lerr != nil {
 			return lerr
 		}
 		return nil
@@ -99,7 +99,7 @@ func (a *Aliases) Add(alias, mac, iface string) error {
 	// We don't have to worry about the key existing, as we will update it
 	// provided it exists.
 	return a.db.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(MainBucketName))
+		bucket := tx.Bucket([]byte(bucketName))
 		return bucket.Put([]byte(alias), buf.Bytes())
 	})
 }
@@ -110,7 +110,7 @@ func (a *Aliases) Del(alias string) error {
 	defer a.mtx.Unlock()
 
 	return a.db.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(MainBucketName))
+		bucket := tx.Bucket([]byte(bucketName))
 		return bucket.Delete([]byte(alias))
 	})
 }
@@ -124,7 +124,7 @@ func (a *Aliases) Get(alias string) (MacIface, error) {
 	err := a.db.View(func(tx *bolt.Tx) error {
 		var err error
 
-		bucket := tx.Bucket([]byte(MainBucketName))
+		bucket := tx.Bucket([]byte(bucketName))
 		value := bucket.Get([]byte(alias))
 		if value == nil {
 			return fmt.Errorf("alias (%s) not found in db", alias)
@@ -143,7 +143,7 @@ func (a *Aliases) List() (map[string]MacIface, error) {
 
 	aliasMap := make(map[string]MacIface, 1)
 	err := a.db.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(MainBucketName))
+		bucket := tx.Bucket([]byte(bucketName))
 		cursor := bucket.Cursor()
 		for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
 			if entry, err := DecodeToMacIface(bytes.NewBuffer(v)); err == nil {

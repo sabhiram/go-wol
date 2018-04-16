@@ -18,7 +18,7 @@ import (
 
 // Helper regex to strip the preamble from the function name. This is
 // used to create a temp db file per test (based on the test name).
-var RE_stripFnPreamble = regexp.MustCompile(`^.*\.(.*)$`)
+var reStripFnPreamble = regexp.MustCompile(`^.*\.(.*)$`)
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -75,7 +75,7 @@ type AliasDBTests struct {
 func (suite *AliasDBTests) SetupTest() {
 	pc, _, _, ok := runtime.Caller(1)
 	if ok {
-		suite.dbName = RE_stripFnPreamble.ReplaceAllString(runtime.FuncForPC(pc).Name(), "$1")
+		suite.dbName = reStripFnPreamble.ReplaceAllString(runtime.FuncForPC(pc).Name(), "$1")
 	}
 
 	var err error
