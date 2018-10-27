@@ -50,7 +50,7 @@ func ipFromInterface(iface string) (*net.UDPAddr, error) {
 		return nil, err
 	}
 
-	// Validate that one of the addr's is a valid network IP address.
+	// Validate that one of the addrs is a valid network IP address.
 	for _, addr := range addrs {
 		switch ip := addr.(type) {
 		case *net.IPNet:
@@ -120,7 +120,7 @@ func wakeCmd(args []string, aliases *Aliases) error {
 
 	// First we need to see if this macAddr is actually an alias, if it is:
 	// we set the eth interface based on the stored item, and set the macAddr
-	// based on the alias entry's mac for this alias.
+	// based on the alias of the entry.
 	mi, err := aliases.Get(macAddr)
 	if err == nil {
 		macAddr = mi.Mac
