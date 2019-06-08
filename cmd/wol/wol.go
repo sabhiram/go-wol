@@ -54,8 +54,7 @@ func ipFromInterface(iface string) (*net.UDPAddr, error) {
 	for _, addr := range addrs {
 		switch ip := addr.(type) {
 		case *net.IPNet:
-			// Verify that the DefaultMask for the address we want to use exists.
-			if ip.IP.DefaultMask() != nil {
+			if !ip.IP.IsLoopback() && ip.IP.To4() != nil {
 				return &net.UDPAddr{
 					IP: ip.IP,
 				}, nil
