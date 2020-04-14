@@ -4,10 +4,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/sabhiram/go-wol/pkg/wol"
 
 	"github.com/sabhiram/go-colorize"
-
-	wol "github.com/sabhiram/go-wol"
 )
 
 ////////////////////////////////////////////////////////////////////////////////

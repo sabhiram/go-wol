@@ -5,6 +5,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/sabhiram/go-wol/pkg/wol"
 	"net"
 	"os"
 	"os/user"
@@ -12,8 +13,6 @@ import (
 	"strings"
 
 	flags "github.com/jessevdk/go-flags"
-
-	wol "github.com/sabhiram/go-wol"
 )
 
 ////////////////////////////////////////////////////////////////////////////////

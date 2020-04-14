@@ -22,7 +22,7 @@ var (
 // MACAddress represents a 6 byte network mac address.
 type MACAddress [6]byte
 
-// A MagicPacket is constituted of 6 bytes of 0xFF followed by 16-groups of the
+// MagicPacket is constituted of 6 bytes of 0xFF followed by 16-groups of the
 // destination MAC address.
 type MagicPacket struct {
 	header  [6]byte
