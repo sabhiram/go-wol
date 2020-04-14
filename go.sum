@@ -1,0 +1,12 @@
+github.com/coreos/bbolt v1.3.1-coreos.6.0.20180223184059-4f5275f4ebbf h1:CmPJznEcWS7opZI1p2IXCRPDxE/6o4YFBv4HYb7VsH4=
+github.com/coreos/bbolt v1.3.1-coreos.6.0.20180223184059-4f5275f4ebbf/go.mod h1:iRUV2dpdMOn7Bo10OQBFzIJO9kkE559Wcmn+qkEiiKk=
+github.com/jessevdk/go-flags v0.0.0-20150816100521-1acbbaff2f34 h1:OsL9UGMqb35j8AxF7EK7UGEK58a4YAWo7DYtJIufuh0=
+github.com/jessevdk/go-flags v0.0.0-20150816100521-1acbbaff2f34/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
+github.com/sabhiram/go-colorize v0.0.0-20150812051142-e1128a35ae9b h1:q2Rsn7fYW1+mjMx/5fINq2XH8G+shGC+TOr4EpYopcw=
+github.com/sabhiram/go-colorize v0.0.0-20150812051142-e1128a35ae9b/go.mod h1:NBc8PFqgx69aTvU7D/y7UHkciTYgWvn50NM0RvpjS4M=
+github.com/stretchr/testify v0.0.0-20150929183540-2b15294402a8 h1:ryzplALtTWkUnRgVkNSsChh81lD3UeYMJ22gPVK/8N0=
+github.com/stretchr/testify v0.0.0-20150929183540-2b15294402a8/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
+golang.org/x/sys v0.0.0-20180202135801-37707fdb30a5 h1:MF92a0wJ3gzSUVBpjcwdrDr5+klMFRNEEu6Mev4n00I=
+golang.org/x/sys v0.0.0-20180202135801-37707fdb30a5/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 h1:opSr2sbRXk5X5/givKrrKj9HXxFpW2sdCiP8MJSKLQY=
+golang.org/x/sys v0.0.0-20200413165638-669c56c373c4/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
