@@ -111,7 +111,7 @@ func (suite *AliasDBTests) TestAddAlias() {
 		// Add the alias to the db.
 		err := suite.aliases.Add(entry.alias, entry.mac, entry.iface)
 		assert.Nil(suite.T(), err)
-		entryCount += 1
+		entryCount++
 
 		// Validate that we have "entryCount" number of aliases added.
 		list, err := suite.aliases.List()

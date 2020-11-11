@@ -5,7 +5,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/sabhiram/go-wol/pkg/wol"
+	"github.com/sabhiram/go-wol/wol"
 	"net"
 	"os"
 	"os/user"
