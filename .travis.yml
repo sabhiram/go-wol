@@ -1,32 +1,32 @@
 language: go
-
 go:
-  - "1.10"
-  - tip
-
+- tip
+- '1.14'
+- '1.13'
+- '1.12'
 env:
-  - "PATH=$HOME/gopath/bin:$PATH"
-
+- PATH=$HOME/gopath/bin:$PATH
 before_install:
-  - go get github.com/mitchellh/gox
-  - go get github.com/axw/gocov/gocov
-  - go get github.com/mattn/goveralls
-  - if ! go get code.google.com/p/go.tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
-
+- go get github.com/mitchellh/gox
+- go get github.com/axw/gocov/gocov
+- go get github.com/mattn/goveralls
+- if ! go get code.google.com/p/go.tools/cmd/cover; then go get golang.org/x/tools/cmd/cover;
+  fi
 script:
-  - ./run_tests.sh
-  - goveralls -coverprofile=coverage.out -service travis-ci -repotoken $COVERALLS_TOKEN
-  - gox -os="linux darwin windows" -arch="amd64" -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}" -ldflags "-X main.Rev=`git rev-parse --short HEAD`" -verbose ./...
-
+- "./run_tests.sh"
+- goveralls -coverprofile=coverage.out -service travis-ci -repotoken $COVERALLS_TOKEN
+- gox -os="linux darwin windows" -arch="amd64" -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"
+  -ldflags "-X main.Rev=`git rev-parse --short HEAD`" -verbose ./...
 deploy:
   provider: releases
   api_key:
-    secure: K4a0yf/to0CcWM+oSfH0pnisnqO8NAtxDO8mHhL1qyDVioI2w6Vgc6nv2vrnkcAgpE8+kd+a48AG0rSAxr976h1ydmQiwZW9eUJqKoYWJyXy1/w0YCJia61IpDNovdRefaDpsteJ5ZgAlIGwdi7vh5hzdSB8kTLg4aQnVT42GEw=
+    secure: L8wTBDS3zQO+pniwKEiF6yKzCQ24GMG7Z/O2BIBoHtUW1oXOFkB2BXxvtPFOnHaSFX72hrXSvt1vz7Ijotz9KRO0y6PQD35diycVvPuSbbnU9p9VGhet1OYI3dGphxZPwyT1KYEe3vP8yxhP491JKsnuOVe53jwMZil75BogO8c=
   file:
-    - bin/wol_darwin_amd64
-    - bin/wol_linux_amd64
-    - bin/wol_windows_amd64.exe
+  - bin/wol_darwin_amd64
+  - bin/wol_linux_amd64
+  - bin/wol_windows_amd64.exe
   skip_cleanup: true
   on:
     repo: sabhiram/go-wol
     tags: true
+    
