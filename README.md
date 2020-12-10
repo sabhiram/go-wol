@@ -124,10 +124,3 @@ All commits and PRs will get run on TravisCI and have corresponding coverage rep
 To run the tests:
 
     go test -v github.com/sabhiram/go-wol/...
-
-
-## Contributors:
-
-1. @traetox for helping adding the optional outbound interface for MagicPackets, and swapping out the `Gob` written to disk for a more elegant `BoltDB` solution.
-2. @mengzhuo for fixing #7.
-3. @gnanderson for updating boltdb.
