@@ -27,7 +27,13 @@ func (wol *WOL) WakeUp() error {
 		return mpErr
 	}
 
-	fmt.Printf("Attempting to send a magic packet to MAC %s\n", "aaa")
+	switch mp := wol.MagicPacket.(type) {
+	case *MagicPacket:
+		fmt.Println("Attempting to send a magic packet to MAC: ", mp.MacAddr)
+	default:
+		fmt.Println("Attempting to send a magic packet")
+	}
+
 	writtenBytes, writeErr := wol.Transport.Write(marshalledBytes)
 
 	if writeErr == nil && writtenBytes != ExpectedWrittenBytes {
