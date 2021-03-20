@@ -13,7 +13,7 @@ before_install:
 - if ! go get code.google.com/p/go.tools/cmd/cover; then go get golang.org/x/tools/cmd/cover;
   fi
 script:
-- "./run_tests.sh"
+- "go test -v ./... -coverprofile=coverage.out"
 - goveralls -coverprofile=coverage.out -service travis-ci -repotoken $COVERALLS_TOKEN
 - gox -os="linux darwin windows" -arch="amd64" -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"
   -ldflags "-X main.Rev=`git rev-parse --short HEAD`" -verbose ./...
