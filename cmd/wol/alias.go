@@ -4,13 +4,13 @@ package main
 
 import (
 	"bytes"
-	"encoding/gob"
 	"fmt"
 	"os"
 	"path"
 	"sync"
 
 	bolt "github.com/coreos/bbolt"
+	"github.com/sabhiram/go-wol/wol"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -18,33 +18,6 @@ import (
 const (
 	bucketName = "Aliases"
 )
-
-////////////////////////////////////////////////////////////////////////////////
-
-// MacIface holds a MAC Address to wake up, along with an optionally specified
-// default interface to use when typically waking up said interface.
-type MacIface struct {
-	Mac   string
-	Iface string
-}
-
-// DecodeToMacIface takes a byte buffer and converts decodes it using the gob
-// package to a MacIface entry.
-func DecodeToMacIface(buf *bytes.Buffer) (MacIface, error) {
-	var entry MacIface
-	decoder := gob.NewDecoder(buf)
-	err := decoder.Decode(&entry)
-	return entry, err
-}
-
-// EncodeFromMacIface takes a MAC and an Iface and encodes a gob with a MacIface
-// entry.
-func EncodeFromMacIface(mac, iface string) (*bytes.Buffer, error) {
-	buf := bytes.NewBuffer(nil)
-	entry := MacIface{mac, iface}
-	err := gob.NewEncoder(buf).Encode(entry)
-	return buf, err
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -91,7 +64,7 @@ func (a *Aliases) Add(alias, mac, iface string) error {
 	defer a.mtx.Unlock()
 
 	// Create a buffer to store the encoded MAC, interface pair.
-	buf, err := EncodeFromMacIface(mac, iface)
+	buf, err := wol.EncodeFromMacIface(mac, iface)
 	if err != nil {
 		return err
 	}
@@ -116,11 +89,11 @@ func (a *Aliases) Del(alias string) error {
 }
 
 // Get retrieves a MacIface from the store based on an alias string.
-func (a *Aliases) Get(alias string) (MacIface, error) {
+func (a *Aliases) Get(alias string) (wol.MacIface, error) {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
-	var entry MacIface
+	var entry wol.MacIface
 	err := a.db.View(func(tx *bolt.Tx) error {
 		var err error
 
@@ -130,23 +103,23 @@ func (a *Aliases) Get(alias string) (MacIface, error) {
 			return fmt.Errorf("alias (%s) not found in db", alias)
 		}
 
-		entry, err = DecodeToMacIface(bytes.NewBuffer(value))
+		entry, err = wol.DecodeToMacIface(bytes.NewBuffer(value))
 		return err
 	})
 	return entry, err
 }
 
 // List returns a map containing all alias MacIface pairs.
-func (a *Aliases) List() (map[string]MacIface, error) {
+func (a *Aliases) List() (map[string]wol.MacIface, error) {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
-	aliasMap := make(map[string]MacIface, 1)
+	aliasMap := make(map[string]wol.MacIface, 1)
 	err := a.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(bucketName))
 		cursor := bucket.Cursor()
 		for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
-			if entry, err := DecodeToMacIface(bytes.NewBuffer(v)); err == nil {
+			if entry, err := wol.DecodeToMacIface(bytes.NewBuffer(v)); err == nil {
 				aliasMap[string(k)] = entry
 			} else {
 				return err

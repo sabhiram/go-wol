@@ -3,13 +3,12 @@ package main
 ////////////////////////////////////////////////////////////////////////////////
 
 import (
-	"bytes"
-	"encoding/gob"
 	"os"
 	"regexp"
 	"runtime"
 	"testing"
 
+	"github.com/sabhiram/go-wol/wol"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
@@ -19,47 +18,6 @@ import (
 // Helper regex to strip the preamble from the function name. This is
 // used to create a temp db file per test (based on the test name).
 var reStripFnPreamble = regexp.MustCompile(`^.*\.(.*)$`)
-
-////////////////////////////////////////////////////////////////////////////////
-
-// Validate the DecodeToMacIface function.
-func TestDecodeToMacIface(t *testing.T) {
-	var TestCases = []MacIface{
-		{"00:00:00:00:00:00", ""},
-		{"00:00:00:00:00:AA", "eth1"},
-	}
-
-	for _, entry := range TestCases {
-		// First encode the MacIface to a bunch of bytes.
-		buf := bytes.NewBuffer(nil)
-		err := gob.NewEncoder(buf).Encode(entry)
-		assert.Nil(t, err)
-
-		result, err := DecodeToMacIface(buf)
-		assert.Nil(t, err)
-		assert.Equal(t, entry.Mac, result.Mac)
-		assert.Equal(t, entry.Iface, result.Iface)
-	}
-}
-
-// Validate the EncodeFromMacIface function.
-func TestEncodeFromMacIface(t *testing.T) {
-	var TestCases = []MacIface{
-		{"00:00:00:00:00:00", "eth0"},
-		{"00:00:00:00:00:AA", ""},
-	}
-
-	for _, entry := range TestCases {
-		// First encode the MacIface to a bunch of bytes.
-		buf, err := EncodeFromMacIface(entry.Mac, entry.Iface)
-		assert.Nil(t, err)
-
-		result, err := DecodeToMacIface(buf)
-		assert.Nil(t, err)
-		assert.Equal(t, entry.Mac, result.Mac)
-		assert.Equal(t, entry.Iface, result.Iface)
-	}
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -148,7 +106,7 @@ func (suite *AliasDBTests) TestAddDuplicateAlias() {
 // Adding a duplicate entry should overwrite the original one.
 func (suite *AliasDBTests) TestDeleteAlias() {
 	var err error
-	var list map[string]MacIface
+	var list map[string]wol.MacIface
 
 	err = suite.aliases.Add("test01", "00:11:22:33:44:55", "eth0")
 	assert.Nil(suite.T(), err)
@@ -175,7 +133,7 @@ func (suite *AliasDBTests) TestDeleteAlias() {
 
 // Adding a duplicate entry should overwrite the original one.
 func (suite *AliasDBTests) TestGetAlias() {
-	var mi MacIface
+	var mi wol.MacIface
 
 	var TestCases = []struct {
 		alias, mac, iface string

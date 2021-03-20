@@ -4,11 +4,7 @@ github.com/jessevdk/go-flags v0.0.0-20150816100521-1acbbaff2f34 h1:OsL9UGMqb35j8
 github.com/jessevdk/go-flags v0.0.0-20150816100521-1acbbaff2f34/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/sabhiram/go-colorize v0.0.0-20150812051142-e1128a35ae9b h1:q2Rsn7fYW1+mjMx/5fINq2XH8G+shGC+TOr4EpYopcw=
 github.com/sabhiram/go-colorize v0.0.0-20150812051142-e1128a35ae9b/go.mod h1:NBc8PFqgx69aTvU7D/y7UHkciTYgWvn50NM0RvpjS4M=
-github.com/sabhiram/gover v0.0.0-20180416054921-4b263cfb1bd8 h1:7jk7KSHc2VWqY1F75+0P5yeIupiYQNLcSzm+s6Zhv7M=
-github.com/sabhiram/gover v0.0.0-20180416054921-4b263cfb1bd8/go.mod h1:P5xNd813JV+yWbtS+sK+6qoe265E1WsCdAEkf53J7UE=
 github.com/stretchr/testify v0.0.0-20150929183540-2b15294402a8 h1:ryzplALtTWkUnRgVkNSsChh81lD3UeYMJ22gPVK/8N0=
 github.com/stretchr/testify v0.0.0-20150929183540-2b15294402a8/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
-golang.org/x/sys v0.0.0-20180202135801-37707fdb30a5 h1:MF92a0wJ3gzSUVBpjcwdrDr5+klMFRNEEu6Mev4n00I=
-golang.org/x/sys v0.0.0-20180202135801-37707fdb30a5/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 h1:opSr2sbRXk5X5/givKrrKj9HXxFpW2sdCiP8MJSKLQY=
 golang.org/x/sys v0.0.0-20200413165638-669c56c373c4/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=

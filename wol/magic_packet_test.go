@@ -13,17 +13,17 @@ import (
 func TestNewMagicPacket(t *testing.T) {
 	for _, tc := range []struct {
 		mac      string
-		expected MACAddress
+		expected MACAddress6Byte
 	}{
-		{"00:00:00:00:00:00", MACAddress{0, 0, 0, 0, 0, 0}},
-		{"00:ff:01:03:00:00", MACAddress{0, 255, 1, 3, 0, 0}},
-		{"00-ff-01-03-00-00", MACAddress{0, 255, 1, 3, 0, 0}},
+		{"00:00:00:00:00:00", MACAddress6Byte{0, 0, 0, 0, 0, 0}},
+		{"00:ff:01:03:00:00", MACAddress6Byte{0, 255, 1, 3, 0, 0}},
+		{"00-ff-01-03-00-00", MACAddress6Byte{0, 255, 1, 3, 0, 0}},
 	} {
-		pkt, err := New(tc.mac)
-		for _, v := range pkt.header {
+		pkt, err := NewMagicPacket(tc.mac)
+		for _, v := range pkt.Packet.header {
 			assert.Equal(t, int(v), 255)
 		}
-		for _, mac := range pkt.payload {
+		for _, mac := range pkt.Packet.payload {
 			assert.Equal(t, tc.expected, mac)
 		}
 		assert.Equal(t, err, nil)
@@ -44,7 +44,7 @@ func TestNewMagicPacketNegative(t *testing.T) {
 		{"0123.4567.89ab.cdef"},
 		{"0123.4567.89ab.cdef.0000.0123.4567.89ab.cdef.0000"},
 	} {
-		_, err := New(tc.mac)
+		_, err := NewMagicPacket(tc.mac)
 		assert.NotNil(t, err)
 	}
 }
@@ -58,10 +58,10 @@ func TestMagicPacketMarshal(t *testing.T) {
 		{"00:ff:01:03:00:00", 102},
 		{"00-ff-01-03-00-00", 102},
 	} {
-		pkt, err := New(tc.mac)
+		pkt, err := NewMagicPacket(tc.mac)
 		assert.Equal(t, err, nil)
 
-		bs, err := pkt.Marshal()
+		bs, err := pkt.MarshalBinary()
 		assert.Equal(t, err, nil)
 
 		assert.Equal(t, len(bs), tc.count)
