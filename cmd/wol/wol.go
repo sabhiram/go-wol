@@ -5,12 +5,14 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/sabhiram/go-wol/wol"
 	"net"
 	"os"
 	"os/user"
 	"path"
 	"strings"
+
+	"github.com/sabhiram/go-wol/internal/persistence"
+	"github.com/sabhiram/go-wol/pkg/wol"
 
 	flags "github.com/jessevdk/go-flags"
 )
@@ -34,39 +36,8 @@ var (
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// ipFromInterface returns a `*net.UDPAddr` from a network interface name.
-func ipFromInterface(iface string) (*net.UDPAddr, error) {
-	ief, err := net.InterfaceByName(iface)
-	if err != nil {
-		return nil, err
-	}
-
-	addrs, err := ief.Addrs()
-	if err == nil && len(addrs) <= 0 {
-		err = fmt.Errorf("no address associated with interface %s", iface)
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	// Validate that one of the addrs is a valid network IP address.
-	for _, addr := range addrs {
-		switch ip := addr.(type) {
-		case *net.IPNet:
-			if !ip.IP.IsLoopback() && ip.IP.To4() != nil {
-				return &net.UDPAddr{
-					IP: ip.IP,
-				}, nil
-			}
-		}
-	}
-	return nil, fmt.Errorf("no address associated with interface %s", iface)
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 // Run the alias command.
-func aliasCmd(args []string, aliases *Aliases) error {
+func aliasCmd(args []string, aliases *persistence.Aliases) error {
 	if len(args) >= 2 {
 		var eth string
 		if len(args) > 2 {
@@ -80,7 +51,7 @@ func aliasCmd(args []string, aliases *Aliases) error {
 }
 
 // Run the list command.
-func listCmd(args []string, aliases *Aliases) error {
+func listCmd(args []string, aliases *persistence.Aliases) error {
 	mp, err := aliases.List()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to get list of aliases: %v\n", err)
@@ -97,7 +68,7 @@ func listCmd(args []string, aliases *Aliases) error {
 }
 
 // Run the remove command.
-func removeCmd(args []string, aliases *Aliases) error {
+func removeCmd(args []string, aliases *persistence.Aliases) error {
 	if len(args) > 0 {
 		alias := args[0]
 		return aliases.Del(alias)
@@ -106,9 +77,9 @@ func removeCmd(args []string, aliases *Aliases) error {
 }
 
 // Run the wake command.
-func wakeCmd(args []string, aliases *Aliases) error {
+func wakeCmd(args []string, aliases *persistence.Aliases) error {
 	if len(args) <= 0 {
-		return errors.New("No mac address specified to wake command")
+		return errors.New("no mac address specified to wake command")
 	}
 
 	// bcastInterface can be "eth0", "eth1", etc.. An empty string implies
@@ -134,7 +105,7 @@ func wakeCmd(args []string, aliases *Aliases) error {
 	// been set.
 	var localAddr *net.UDPAddr
 	if bcastInterface != "" {
-		localAddr, err = ipFromInterface(bcastInterface)
+		localAddr, err = wol.IPFromInterface(bcastInterface)
 		if err != nil {
 			return err
 		}
@@ -148,17 +119,15 @@ func wakeCmd(args []string, aliases *Aliases) error {
 		return err
 	}
 
+	fmt.Println("Using broadcast addr:", bcastAddr)
+
 	// Build the magic packet.
-	mp, err := wol.New(macAddr)
+	mp, err := wol.NewMagicPacket(macAddr)
 	if err != nil {
 		return err
 	}
 
-	// Grab a stream of bytes to send.
-	bs, err := mp.Marshal()
-	if err != nil {
-		return err
-	}
+	fmt.Println("Using mac address:", macAddr)
 
 	// Grab a UDP connection to send our packet of bytes.
 	conn, err := net.DialUDP("udp", localAddr, udpAddr)
@@ -167,13 +136,12 @@ func wakeCmd(args []string, aliases *Aliases) error {
 	}
 	defer conn.Close()
 
-	fmt.Printf("Attempting to send a magic packet to MAC %s\n", macAddr)
-	fmt.Printf("... Broadcasting to: %s\n", bcastAddr)
-	n, err := conn.Write(bs)
-	if err == nil && n != 102 {
-		err = fmt.Errorf("magic packet sent was %d bytes (expected 102 bytes sent)", n)
-	}
-	if err != nil {
+	w := wol.New(
+		mp,
+		conn,
+	)
+
+	if err := w.WakeUp(); err != nil {
 		return err
 	}
 
@@ -183,7 +151,7 @@ func wakeCmd(args []string, aliases *Aliases) error {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-type cmdFnType func([]string, *Aliases) error
+type cmdFnType func([]string, *persistence.Aliases) error
 
 var cmdMap = map[string]cmdFnType{
 	"alias":  aliasCmd,
@@ -198,9 +166,9 @@ var cmdMap = map[string]cmdFnType{
 // it also returns the exit code requested to the function (saves me a line).
 func printUsageGetExitCode(s string, e int) int {
 	if len(s) > 0 {
-		fmt.Printf(s)
+		fmt.Println(s)
 	}
-	fmt.Printf(getAppUsageString())
+	fmt.Println(getAppUsageString())
 	return e
 }
 
@@ -220,7 +188,7 @@ func main() {
 	fatalOnError(err)
 
 	// Load the list of aliases from the file at dbPath.
-	aliases, err := LoadAliases(path.Join(usr.HomeDir, dbPath))
+	aliases, err := persistence.LoadAliases(path.Join(usr.HomeDir, dbPath))
 	fatalOnError(err)
 	defer aliases.Close()
 

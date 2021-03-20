@@ -23,4 +23,8 @@ _testmain.go
 *.test
 *.prof
 
+# VSCODE
 .idea/
+
+# Coverage
+coverage.out
