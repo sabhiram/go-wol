@@ -1,9 +1,9 @@
 language: go
 go:
 - tip
+- '1.16'
+- '1.15'
 - '1.14'
-- '1.13'
-- '1.12'
 env:
 - PATH=$HOME/gopath/bin:$PATH
 before_install:
