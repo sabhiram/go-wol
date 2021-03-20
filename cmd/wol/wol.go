@@ -11,7 +11,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/sabhiram/go-wol/wol"
+	"github.com/sabhiram/go-wol/internal/persistence"
+	"github.com/sabhiram/go-wol/pkg/wol"
 
 	flags "github.com/jessevdk/go-flags"
 )
@@ -36,7 +37,7 @@ var (
 ////////////////////////////////////////////////////////////////////////////////
 
 // Run the alias command.
-func aliasCmd(args []string, aliases *Aliases) error {
+func aliasCmd(args []string, aliases *persistence.Aliases) error {
 	if len(args) >= 2 {
 		var eth string
 		if len(args) > 2 {
@@ -50,7 +51,7 @@ func aliasCmd(args []string, aliases *Aliases) error {
 }
 
 // Run the list command.
-func listCmd(args []string, aliases *Aliases) error {
+func listCmd(args []string, aliases *persistence.Aliases) error {
 	mp, err := aliases.List()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to get list of aliases: %v\n", err)
@@ -67,7 +68,7 @@ func listCmd(args []string, aliases *Aliases) error {
 }
 
 // Run the remove command.
-func removeCmd(args []string, aliases *Aliases) error {
+func removeCmd(args []string, aliases *persistence.Aliases) error {
 	if len(args) > 0 {
 		alias := args[0]
 		return aliases.Del(alias)
@@ -76,7 +77,7 @@ func removeCmd(args []string, aliases *Aliases) error {
 }
 
 // Run the wake command.
-func wakeCmd(args []string, aliases *Aliases) error {
+func wakeCmd(args []string, aliases *persistence.Aliases) error {
 	if len(args) <= 0 {
 		return errors.New("no mac address specified to wake command")
 	}
@@ -150,7 +151,7 @@ func wakeCmd(args []string, aliases *Aliases) error {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-type cmdFnType func([]string, *Aliases) error
+type cmdFnType func([]string, *persistence.Aliases) error
 
 var cmdMap = map[string]cmdFnType{
 	"alias":  aliasCmd,
@@ -187,7 +188,7 @@ func main() {
 	fatalOnError(err)
 
 	// Load the list of aliases from the file at dbPath.
-	aliases, err := LoadAliases(path.Join(usr.HomeDir, dbPath))
+	aliases, err := persistence.LoadAliases(path.Join(usr.HomeDir, dbPath))
 	fatalOnError(err)
 	defer aliases.Close()
 

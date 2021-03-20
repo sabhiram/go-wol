@@ -1,4 +1,4 @@
-package main
+package persistence
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/sabhiram/go-wol/wol"
+	"github.com/sabhiram/go-wol/pkg/wol"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
