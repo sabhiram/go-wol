@@ -5,12 +5,14 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/sabhiram/go-wol/wol"
 	"net"
 	"os"
 	"os/user"
 	"path"
 	"strings"
+
+	"github.com/sabhiram/go-colorize"
+	"github.com/sabhiram/go-wol/wol"
 
 	flags "github.com/jessevdk/go-flags"
 )
@@ -26,6 +28,7 @@ var (
 	cliFlags struct {
 		Version            bool   `short:"v" long:"version"`
 		Help               bool   `short:"h" long:"help"`
+		NoColor            bool   `short:"n" long:"no-color"`
 		BroadcastInterface string `short:"i" long:"interface" default:""`
 		BroadcastIP        string `short:"b" long:"bcast" default:"255.255.255.255"`
 		UDPPort            string `short:"p" long:"port" default:"9"`
@@ -228,11 +231,17 @@ func main() {
 	parser := flags.NewParser(&cliFlags, flags.Default & ^flags.HelpFlag)
 	args, err = parser.Parse()
 
+	// Disable color if needed.
+	if cliFlags.NoColor {
+		colorize.DisableColor = true
+	}
+
 	ec := 0
 	switch {
 
 	// Parse Error, print usage.
 	case err != nil:
+		fmt.Print(err.Error())
 		ec = printUsageGetExitCode("", 1)
 
 	// No arguments, or help requested, print usage.

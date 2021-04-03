@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/sabhiram/go-wol/wol"
 
 	"github.com/sabhiram/go-colorize"
@@ -26,6 +27,7 @@ var (
 	}{
 		{`v`, `version`, `prints the application version`},
 		{`h`, `help`, `prints this help menu`},
+		{`c`, `no-color`, `disables ANSI color`},
 		{`p`, `port`, `udp port to send bcast packet to`},
 		{`b`, `bcast`, `broadcast IP to send packet to`},
 		{`i`, `interface`, `outbound interface to broadcast using`},
