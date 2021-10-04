@@ -20,13 +20,15 @@ import (
 ////////////////////////////////////////////////////////////////////////////////
 
 const (
-	dbPath = "/.config/go-wol/bolt.db"
+	defaultDBDir = "/.config/go-wol"
 )
 
 var (
 	// Define holders for the cli arguments we wish to parse.
 	cliFlags struct {
 		Version            bool   `short:"v" long:"version"`
+		DBDir              string `short:"d" long:"db-dir" default:""`
+		DBName             string `short:"a" long:"db-name" default:"bolt.db"`
 		Help               bool   `short:"h" long:"help"`
 		NoColor            bool   `short:"n" long:"no-color"`
 		BroadcastInterface string `short:"i" long:"interface" default:""`
@@ -217,15 +219,7 @@ func fatalOnError(err error) {
 // Main entry point for binary.
 func main() {
 	var args []string
-
-	// Detect the current user to figure out what their ~ is.
-	usr, err := user.Current()
-	fatalOnError(err)
-
-	// Load the list of aliases from the file at dbPath.
-	aliases, err := LoadAliases(path.Join(usr.HomeDir, dbPath))
-	fatalOnError(err)
-	defer aliases.Close()
+	var err error
 
 	// Parse arguments which might get passed to "wol".
 	parser := flags.NewParser(&cliFlags, flags.Default & ^flags.HelpFlag)
@@ -258,6 +252,26 @@ func main() {
 
 	// All other cases go here.
 	case true:
+		// Detect the current user to figure out what their ~ is.
+		usr, err := user.Current()
+		fatalOnError(err)
+
+		// If the user provided a `--db-dir` we expect an existing bolt db
+		// at the appropriate path.
+		dbDir := path.Join(usr.HomeDir, defaultDBDir)
+		if len(cliFlags.DBDir) != 0 {
+			dbDir = cliFlags.DBDir
+		}
+
+		// Allow the name for the `db` to also be customized. Default is
+		// `bolt.db`.
+		dbPath := path.Join(dbDir, cliFlags.DBName)
+
+		// Load the list of aliases from the file at dbPath.
+		aliases, err := LoadAliases(dbPath)
+		fatalOnError(err)
+		defer aliases.Close()
+
 		cmd, cmdArgs := strings.ToLower(args[0]), args[1:]
 		if fn, ok := cmdMap[cmd]; ok {
 			err = fn(cmdArgs, aliases)

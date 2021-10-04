@@ -27,6 +27,8 @@ var (
 	}{
 		{`v`, `version`, `prints the application version`},
 		{`h`, `help`, `prints this help menu`},
+		{`d`, `db-dir`, `directory to store alias db`},
+		{`a`, `db-name`, `bold db file name (default "bolt.db")`},
 		{`c`, `no-color`, `disables ANSI color`},
 		{`p`, `port`, `udp port to send bcast packet to`},
 		{`b`, `bcast`, `broadcast IP to send packet to`},
@@ -78,7 +80,7 @@ func getAllCommands() string {
 func getAllOptions() string {
 	options := ""
 	for _, o := range validOptions {
-		options += fmt.Sprintf("    <yellow>-%s --%-8s</yellow>    %s\n", o.short, o.long, o.description)
+		options += fmt.Sprintf("    <yellow>-%s --%-10s</yellow>    %s\n", o.short, o.long, o.description)
 	}
 	return options
 }
