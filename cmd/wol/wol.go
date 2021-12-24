@@ -8,9 +8,10 @@ import (
 	"net"
 	"os"
 	"os/user"
-	"path"
+	"path/filepath"
 	"strings"
 
+	"github.com/mattn/go-colorable"
 	"github.com/sabhiram/go-colorize"
 	"github.com/sabhiram/go-wol/wol"
 
@@ -35,6 +36,7 @@ var (
 		BroadcastIP        string `short:"b" long:"bcast" default:"255.255.255.255"`
 		UDPPort            string `short:"p" long:"port" default:"9"`
 	}
+	stdout = colorable.NewColorableStdout()
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -205,7 +207,7 @@ func printUsageGetExitCode(s string, e int) int {
 	if len(s) > 0 {
 		fmt.Printf(s)
 	}
-	fmt.Printf(getAppUsageString())
+	fmt.Fprintf(stdout, getAppUsageString())
 	return e
 }
 
@@ -258,14 +260,14 @@ func main() {
 
 		// If the user provided a `--db-dir` we expect an existing bolt db
 		// at the appropriate path.
-		dbDir := path.Join(usr.HomeDir, defaultDBDir)
+		dbDir := filepath.Join(usr.HomeDir, defaultDBDir)
 		if len(cliFlags.DBDir) != 0 {
 			dbDir = cliFlags.DBDir
 		}
 
 		// Allow the name for the `db` to also be customized. Default is
 		// `bolt.db`.
-		dbPath := path.Join(dbDir, cliFlags.DBName)
+		dbPath := filepath.Join(dbDir, cliFlags.DBName)
 
 		// Load the list of aliases from the file at dbPath.
 		aliases, err := LoadAliases(dbPath)
