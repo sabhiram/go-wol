@@ -22,13 +22,24 @@ It's important to remember that since this is typically sent over the [data link
 
 ## Installation
 
+Updated Go version
+```sh
+go install github.com/sabhiram/go-wol/cmd/wol@latest
 ```
+
+or
+
+Outdated Go version `(deprecated)`
+```sh
 go get github.com/sabhiram/go-wol/cmd/wol
-wol wake 08:BA:AD:F0:00:0D
 ```
 
 
 ## Usage
+
+```sh
+wol wake 08:BA:AD:F0:00:0D
+```
 
 Valid commands include:
 ```go
